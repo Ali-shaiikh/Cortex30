@@ -87,3 +87,19 @@ export type Profile = {
   start_date: string;
   created_at: string;
 };
+
+/** What the browser gets about an exercise: never the reference solution or rubric. */
+export type ExercisePublic = Pick<Exercise, "id" | "day" | "category" | "title" | "prompt" | "minutes" | "concept" | "revisit_of">;
+
+export function toPublic(e: Exercise | BonusExercise & { day: number; id?: string; minutes?: number }): ExercisePublic {
+  return {
+    id: "id" in e && e.id ? e.id : `bonus-${e.day}`,
+    day: e.day,
+    category: e.category,
+    title: e.title,
+    prompt: e.prompt,
+    minutes: ("minutes" in e && e.minutes) || 5,
+    concept: e.concept,
+    ...("revisit_of" in e && e.revisit_of ? { revisit_of: e.revisit_of } : {}),
+  };
+}
