@@ -10,7 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build:exercises": "node scripts/build-exercises.mjs",
-    "test:grading": "tsx --env-file=.env.local scripts/test-grading.ts"
+    "test:grading": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/test-grading.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -41,5 +41,8 @@
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }
