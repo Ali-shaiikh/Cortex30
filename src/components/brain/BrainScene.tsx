@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/immutability, react-hooks/refs -- three.js objects are mutated imperatively inside useFrame, the idiomatic r3f pattern. */
 
 import { Billboard, Html, Line, OrbitControls, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -60,7 +61,7 @@ function OrbitControlsWithIdle({ reducedMotion }: { reducedMotion: boolean }) {
       ref={ref}
       enablePan={false}
       minDistance={2}
-      maxDistance={6}
+      maxDistance={9}
       enableDamping
       dampingFactor={0.08}
       onStart={() => {
@@ -106,7 +107,14 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
     return () => clearTimeout(t);
   }, [celebration, layout]);
 
-  const baseZ = camera.position.z;
+  // Resting camera distance: pull back on tall/narrow screens so the whole brain fits.
+  const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
+  // Half-width to keep in view (brain + halo ≈ 1.45) / tan(half the horizontal FOV).
+  const baseZ = Math.max(interactive ? 3.4 : 3.9, 1.45 / (Math.tan(THREE.MathUtils.degToRad(21)) * aspect));
+  useEffect(() => {
+    if (interactive) camera.position.setLength(baseZ);
+  }, [interactive, baseZ, camera]);
+
   useFrame((state, delta) => {
     const g = group.current;
     if (!g) return;
@@ -133,7 +141,7 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
   });
 
   return (
-    <group ref={group} rotation={[0.12, -0.5, 0]}>
+    <group ref={group} rotation={[0.22, -0.95, 0]}>
       <PointCloud count={particles} mastery={data.mastery} finisher={data.flags.finisher} ripple={rippleRef.current} reducedMotion={reducedMotion} />
       <Shell hemi={-1} />
       <Shell hemi={1} />
@@ -183,6 +191,7 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
 const cloudVertex = /* glsl */ `
   attribute float aSize;
   attribute float aRand;
+  attribute float aFold;
   attribute vec3 aTint;
   attribute vec4 aMask;
   uniform float uTime;
@@ -196,15 +205,16 @@ const cloudVertex = /* glsl */ `
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = aSize * uPixelRatio * (11.0 / -mv.z);
+    float crest = smoothstep(0.35, 0.95, aFold);
+    gl_PointSize = aSize * (0.75 + 0.7 * crest) * uPixelRatio * (12.0 / -mv.z);
 
-    vec3 centre = vec3(sign(position.x) * 0.56, 0.0, 0.0);
+    vec3 centre = vec3(sign(position.x) * 0.45, 0.0, 0.0);
     vec3 n = normalize(normalMatrix * normalize(position - centre));
     float fresnel = pow(1.0 - abs(dot(n, normalize(-mv.xyz))), 2.2);
 
     vec3 navy = vec3(0.07, 0.12, 0.32);
     vec3 cyan = vec3(0.35, 0.85, 1.0);
-    vec3 col = mix(navy, cyan, fresnel * 0.85);
+    vec3 col = mix(navy, cyan, fresnel * 0.85) * (0.45 + 0.9 * crest);
     float m = dot(aMask, uMastery);
     col += aTint * (0.12 + 0.95 * m);
     col = mix(col, col * 1.6 + vec3(0.1, 0.12, 0.2), uFinisher);
@@ -269,6 +279,7 @@ function PointCloud({ count, mastery, finisher, ripple, reducedMotion }: { count
         <bufferAttribute attach="attributes-position" args={[cloud.positions, 3]} />
         <bufferAttribute attach="attributes-aSize" args={[cloud.sizes, 1]} />
         <bufferAttribute attach="attributes-aRand" args={[cloud.rands, 1]} />
+        <bufferAttribute attach="attributes-aFold" args={[cloud.folds, 1]} />
         <bufferAttribute attach="attributes-aTint" args={[cloud.tints, 3]} />
         <bufferAttribute attach="attributes-aMask" args={[cloud.masks, 4]} />
       </bufferGeometry>
@@ -289,7 +300,7 @@ const shellFragment = /* glsl */ `
   varying float vFresnel;
   void main() {
     vec3 col = mix(vec3(0.03, 0.06, 0.16), vec3(0.4, 0.88, 1.0), vFresnel);
-    gl_FragColor = vec4(col, 0.05 + vFresnel * 0.32);
+    gl_FragColor = vec4(col, 0.03 + vFresnel * 0.22);
   }
 `;
 
@@ -355,10 +366,10 @@ function Cores({ lit, interactive, filter, onFilter }: { lit: boolean; interacti
               <meshBasicMaterial color={color} toneMapped={false} />
             </mesh>
             {interactive && (
-              <Html center distanceFactor={6} position={[0, 0.12, 0]} zIndexRange={[10, 0]}>
+              <Html center position={[0, 0.14, 0]} zIndexRange={[10, 0]}>
                 <button
                   onClick={() => onFilter?.(filter === c ? null : c)}
-                  className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold backdrop-blur transition ${filter === c ? "bg-white/20" : "bg-black/40 hover:bg-white/10"}`}
+                  className={`whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold backdrop-blur transition ${filter === c ? "bg-white/20" : "bg-black/40 hover:bg-white/10"}`}
                   style={{ borderColor: `${REGION[c].color}88`, color: REGION[c].color }}
                 >
                   {CATEGORY_META[c].label}
@@ -625,8 +636,8 @@ function Halo({ reducedMotion }: { reducedMotion: boolean }) {
     if (ref.current && !reducedMotion) ref.current.rotation.z += delta * 0.15;
   });
   return (
-    <mesh ref={ref} rotation={[Math.PI / 2.3, 0, 0]}>
-      <torusGeometry args={[1.45, 0.004, 8, 160]} />
+    <mesh ref={ref} rotation={[Math.PI / 2 - 0.55, 0.25, 0]}>
+      <torusGeometry args={[1.35, 0.004, 8, 160]} />
       <meshBasicMaterial color={new THREE.Color("#6fe7ff").multiplyScalar(2.2)} toneMapped={false} transparent opacity={0.7} />
     </mesh>
   );

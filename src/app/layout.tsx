@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "A 30-day AI-coached program for logic, analytical, critical and creative thinking.",
   applicationName: "Mind Gym",
   appleWebApp: { capable: true, title: "Mind Gym", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
+  icons: { icon: "/icons/icon.svg", apple: "/icons/png/180" },
 };
 
 export const viewport: Viewport = {

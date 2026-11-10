@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Exercise source data (plain arrays).
+    "scripts/exercises/**",
   ]),
 ]);
 

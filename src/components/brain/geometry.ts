@@ -3,8 +3,9 @@
 import * as THREE from "three";
 import { CATEGORIES, type Category } from "@/lib/types";
 
-export const HEMI_OFFSET = 0.56; // centre of each hemisphere on the x axis (the gap sits between them)
-const RADII = { x: 0.55, y: 0.74, z: 1.0 };
+export const HEMI_OFFSET = 0.45; // centre of each hemisphere on the x axis (the gap sits between them)
+// Proportions of a real brain: width ≈ 0.84 × length, height ≈ 0.6 × length.
+const RADII = { x: 0.42, y: 0.66, z: 1.0 };
 
 // ---------------------------------------------------------------------------
 // Seeded randomness + value noise
@@ -59,13 +60,18 @@ function folds(x: number, y: number, z: number): number {
 // Surface
 // ---------------------------------------------------------------------------
 
+/** Fold height (0 = deep sulcus, 1 = gyrus crest) at a hemisphere direction. */
+export function foldAt(hemi: -1 | 1, d: THREE.Vector3): number {
+  return folds(d.x * RADII.x + hemi * 3.7, d.y * RADII.y, d.z * RADII.z);
+}
+
 /** Point on the folded surface of a hemisphere (hemi = -1 left, +1 right) in direction dir. */
 export function surfacePoint(hemi: -1 | 1, dir: THREE.Vector3, lift = 0, out = new THREE.Vector3()): THREE.Vector3 {
   const d = dir;
   const inward = d.x * hemi < 0;
-  let rx = RADII.x * (inward ? 0.88 : 1);
-  let ry = RADII.y * (d.y < 0 ? 0.72 : 1);
-  let rz = RADII.z * (d.z > 0 ? 0.96 : 1.02);
+  let rx = RADII.x * (inward ? 0.94 : 1);
+  let ry = RADII.y * (d.y < 0 ? 0.68 : 1);
+  const rz = RADII.z * (d.z > 0 ? 0.96 : 1.02);
   // Temporal lobe: bulge outward and down at the lower sides.
   const temporal = Math.max(0, 1 - Math.abs(d.y + 0.35) * 3) * Math.max(0, 1 - Math.abs(d.z - 0.1) * 1.6) * (inward ? 0 : 1);
   rx *= 1 + 0.12 * temporal;
@@ -77,7 +83,7 @@ export function surfacePoint(hemi: -1 | 1, dir: THREE.Vector3, lift = 0, out = n
   }
   out.set(d.x * rx, d.y * ry, d.z * rz);
   const f = folds(out.x + hemi * 3.7, out.y, out.z);
-  const scale = 1 + 0.07 * (f - 0.5) + lift;
+  const scale = 1 + 0.11 * (f - 0.5) + lift;
   out.multiplyScalar(scale);
   out.x += hemi * HEMI_OFFSET;
   return out;
@@ -111,6 +117,7 @@ export type CloudData = {
   positions: Float32Array;
   sizes: Float32Array;
   rands: Float32Array;
+  folds: Float32Array; // 0 = sulcus, 1 = gyrus crest
   tints: Float32Array; // rgb of the nearest region colour, scaled by proximity
   masks: Float32Array; // vec4 one-hot (logic, analytical, critical, creative) * proximity
 };
@@ -120,6 +127,7 @@ export function buildCloud(count: number): CloudData {
   const positions = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const rands = new Float32Array(count);
+  const foldValues = new Float32Array(count).fill(0.5);
   const tints = new Float32Array(count * 3);
   const masks = new Float32Array(count * 4);
   const dir = new THREE.Vector3();
@@ -136,8 +144,14 @@ export function buildCloud(count: number): CloudData {
       p.multiplyScalar(ridge);
     } else {
       const hemi: -1 | 1 = rand() < 0.5 ? -1 : 1;
-      dir.x = Math.abs(dir.x) * hemi * (rand() < 0.88 ? 1 : -1);
-      surfacePoint(hemi, dir, -rand() * 0.05, p);
+      // Rejection-sample towards gyrus crests so the folds read as glowing ridges.
+      for (let tries = 0; tries < 6; tries++) {
+        randomDir(rand, dir);
+        dir.x = Math.abs(dir.x) * hemi * (rand() < 0.88 ? 1 : -1);
+        foldValues[i] = foldAt(hemi, dir);
+        if (rand() < foldValues[i] ** 2 * 1.3) break;
+      }
+      surfacePoint(hemi, dir, -rand() * 0.03, p);
       // Mark proximity to the hemisphere's two regions.
       CATEGORIES.forEach((c, ci) => {
         if (REGION[c].hemi !== hemi) return;
@@ -154,7 +168,7 @@ export function buildCloud(count: number): CloudData {
     sizes[i] = 0.6 + rand() * 1.1;
     rands[i] = rand();
   }
-  return { positions, sizes, rands, tints, masks };
+  return { positions, sizes, rands, folds: foldValues, tints, masks };
 }
 
 /** Displaced sphere geometry for the faint translucent shell of one hemisphere. */

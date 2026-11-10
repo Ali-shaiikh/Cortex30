@@ -4,6 +4,9 @@ import { Header } from "@/components/Header";
 import { buildBrainData } from "@/lib/brainData";
 import { requireUserData } from "@/lib/data";
 
+// Every page under this layout is per-user.
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const { profile, submissions, reports, today } = await requireUserData();
   const brain = buildBrainData(submissions, reports, today, profile.start_date);

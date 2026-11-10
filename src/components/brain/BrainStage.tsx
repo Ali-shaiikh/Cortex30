@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { BrainData, BrainNode } from "@/lib/brainData";
 import type { Category } from "@/lib/types";
 import type { SceneOptions } from "./BrainScene";
@@ -35,15 +35,21 @@ type Props = {
   onFilter?: (c: Category | null) => void;
 };
 
+let cached: Capabilities | null = null;
+function subscribe(onChange: () => void) {
+  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const handler = () => {
+    cached = detect();
+    onChange();
+  };
+  mq.addEventListener("change", handler);
+  return () => mq.removeEventListener("change", handler);
+}
+const getSnapshot = () => (cached ??= detect());
+const getServerSnapshot = () => null;
+
 export function BrainStage({ data, interactive = false, className = "", ...rest }: Props) {
-  const [caps, setCaps] = useState<Capabilities | null>(null);
-  useEffect(() => {
-    setCaps(detect());
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setCaps(detect());
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+  const caps = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   if (!caps) return <div className={className} />;
   if (!caps.webgl) {

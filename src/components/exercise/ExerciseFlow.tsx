@@ -33,14 +33,16 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
   const meta = CATEGORY_META[exercise.category];
   const draftKey = `mg-draft-${bonus ? "bonus" : exercise.category}-${exercise.day}`;
   const [draft, setDraft] = useState<Draft>(EMPTY);
-  const [submission, setSubmission] = useState<Submission | null>(initial);
+  const [localSubmission, setSubmission] = useState<Submission | null>(null);
+  const submission = localSubmission ?? initial;
   const [busy, setBusy] = useState<null | "hint" | "grade" | "followup">(null);
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [question, setQuestion] = useState("");
 
+  // Drafts live in localStorage, which only exists after hydration.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setDraft(loadDraft(draftKey)), [draftKey]);
-  useEffect(() => setSubmission(initial), [initial]);
   useEffect(() => {
     if (submission) return;
     try {
