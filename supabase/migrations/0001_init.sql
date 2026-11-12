@@ -1,4 +1,4 @@
--- Mind Gym: initial schema. Run this once in the Supabase SQL editor.
+-- Cortex30: initial schema. Run this once in the Supabase SQL editor.
 -- Three tables, Row Level Security on, every user can only see their own rows.
 
 -- ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import { CATEGORY_META } from "./types";
 
 export { AIError };
 
-const COACH = `You are the Mind Gym coach: a sharp, honest mentor who trains logic, analytical, critical and creative thinking.
+const COACH = `You are the Cortex30 coach: a sharp, honest mentor who trains logic, analytical, critical and creative thinking.
 Be direct and specific. No flattery, no filler, no emojis. Praise only what is genuinely good.
 Always point at the exact step in the learner's own words when something went wrong (quote it briefly).
 Teach the expert mental model step by step so the learner can reuse it.`;
@@ -80,7 +80,7 @@ export type GradeInput = {
 export async function gradeAnswer(input: GradeInput): Promise<Feedback> {
   const { exercise, answer, reasoning, confidence, pastPatterns, previous } = input;
   const creative = exercise.category === "creative";
-  const prompt = `Grade this Mind Gym exercise.
+  const prompt = `Grade this Cortex30 exercise.
 
 CATEGORY: ${exercise.category}
 CONCEPT: ${exercise.concept}

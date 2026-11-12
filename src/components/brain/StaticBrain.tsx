@@ -1,7 +1,7 @@
 // Static SVG brain: used on auth pages and as the fallback when WebGL is unavailable.
 export function StaticBrain({ className = "", glow = true }: { className?: string; glow?: boolean }) {
   return (
-    <svg viewBox="0 0 400 300" className={className} role="img" aria-label="Mind Gym brain">
+    <svg viewBox="0 0 400 300" className={className} role="img" aria-label="Cortex30 brain">
       <defs>
         <radialGradient id="sb-core" cx="50%" cy="45%" r="55%">
           <stop offset="0%" stopColor="#1b2b5e" stopOpacity="0.9" />

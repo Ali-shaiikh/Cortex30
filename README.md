@@ -1,4 +1,4 @@
-# Mind Gym
+# Cortex30
 
 A 30-day, AI-coached thinking program. Every day unlocks four exercises, one each for **Logic**, **Analytical**, **Critical** and **Creative** thinking. You set your confidence, write your answer and your reasoning, and an AI coach tells you whether you're right, where your thinking went wrong, and how an expert would have approached it. As you progress, a glowing mind map grows across a 3D brain.
 
@@ -30,7 +30,7 @@ You need [Node.js](https://nodejs.org) 20.9 or newer (22 recommended) and a free
 
 ### 3. Turn off email confirmation
 
-Mind Gym logs in with a **username and password**. There's no email. Behind the scenes each username becomes a fake address like `alex@users.mindgym.local`, which can never receive mail, so Supabase must not try to confirm it.
+Cortex30 logs in with a **username and password**. There's no email. Behind the scenes each username becomes a fake address like `alex@users.mindgym.local`, which can never receive mail, so Supabase must not try to confirm it.
 
 1. Open **Authentication**, then **Sign In / Providers** (on older dashboards: **Providers**), then **Email**.
 2. Make sure **Enable Email provider** is **on** and **Confirm email** is **off**.
@@ -85,7 +85,7 @@ Open [http://localhost:3000](http://localhost:3000) and click **Create an accoun
 1. Push this folder to a new GitHub repository.
 2. Go to [vercel.com](https://vercel.com), sign up with GitHub, click **Add New…**, then **Project**, and import the repository. Vercel detects Next.js automatically.
 3. Before clicking **Deploy**, open **Environment Variables** and add the same variables as in your `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`). Vercel keeps them encrypted; they never go into GitHub.
-4. Click **Deploy**. In a minute you'll get a URL like `mind-gym-yourname.vercel.app`.
+4. Click **Deploy**. In a minute you'll get a URL like `cortex30-yourname.vercel.app`.
 5. On your phone, open that URL and choose **Add to Home Screen** to install it as an app.
 
 ---

@@ -167,7 +167,7 @@ Provocations work by suspending judgement: you ask "what would be good about thi
 Library: borrowing, quiet, catalogue, librarians, free access.
 Blends:
 - An "equipment library": borrow kettlebells, bikes and yoga gear for a week (membership like a library card).
-- A "mind gym": structured thinking workouts with coaches and progress tracking (yes, like this app).
+- A "mind gym": structured thinking workouts with coaches and progress tracking (yes, like Cortex30).
 - A reading treadmill room: walking desks + audiobooks, with "reading streaks".
 - A gym where workouts earn library credits (fines replaced by squats!).
 - A trainer "catalogue": borrow a trainer's 4-week programme for free, pay for check-ins.

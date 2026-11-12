@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Mind Gym",
-    short_name: "Mind Gym",
+    name: "Cortex30",
+    short_name: "Cortex30",
     description: "A 30-day AI-coached thinking program.",
     start_url: "/",
     display: "standalone",

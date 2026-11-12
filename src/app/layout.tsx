@@ -9,10 +9,10 @@ const orbitron = Orbitron({ variable: "--font-orbitron", subsets: ["latin"], wei
 const rajdhani = Rajdhani({ variable: "--font-rajdhani", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: { default: "Mind Gym", template: "%s · Mind Gym" },
+  title: { default: "Cortex30", template: "%s · Cortex30" },
   description: "A 30-day AI-coached program for logic, analytical, critical and creative thinking.",
-  applicationName: "Mind Gym",
-  appleWebApp: { capable: true, title: "Mind Gym", statusBarStyle: "black-translucent" },
+  applicationName: "Cortex30",
+  appleWebApp: { capable: true, title: "Cortex30", statusBarStyle: "black-translucent" },
   icons: { icon: "/icons/icon.svg", apple: "/icons/png/180" },
 };
 

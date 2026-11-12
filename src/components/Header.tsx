@@ -25,7 +25,7 @@ export function Header({ username, day }: { username: string; day: number }) {
           <Link href="/" className="display flex items-center gap-2 text-sm font-black">
             <span className="inline-block h-2 w-2 rotate-45 bg-neon shadow-[0_0_12px_#6fe7ff]" />
             <span className="neon">
-              Mind<span className="text-magenta">/</span>Gym
+              Cortex<span className="text-magenta">/</span>30
             </span>
           </Link>
           <span className="font-mono text-[10px] tracking-widest text-neon/60">S{String(day).padStart(2, "0")}/30</span>

@@ -11,7 +11,10 @@ export const credentialsSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-/** Supabase Auth requires an email, so usernames map onto a fake, never-mailed address. */
+/**
+ * Supabase Auth requires an email, so usernames map onto a fake, never-mailed address.
+ * The domain predates the Cortex30 rename; keep it, or every existing account stops being able to log in.
+ */
 export function usernameToEmail(username: string): string {
   return `${username.toLowerCase()}@users.mindgym.local`;
 }

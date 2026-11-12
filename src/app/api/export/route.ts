@@ -9,7 +9,7 @@ export async function GET() {
   if (!ctx) return jsonError("Not signed in", 401);
   const { profile, submissions, reports } = ctx;
 
-  const lines: string[] = [`# Mind Gym: @${profile.username}`, "", `Started ${profile.start_date} · ${submissions.filter((s) => !s.is_bonus).length}/120 exercises`, ""];
+  const lines: string[] = [`# Cortex30: @${profile.username}`, "", `Started ${profile.start_date} · ${submissions.filter((s) => !s.is_bonus).length}/120 exercises`, ""];
   const final = reports.find((r) => r.kind === "final");
   if (final) lines.push("## Final review", "", final.text, "");
   for (const r of reports.filter((r) => r.kind === "weekly").sort((a, b) => (a.week ?? 0) - (b.week ?? 0))) {
@@ -59,7 +59,7 @@ export async function GET() {
   return new Response(lines.join("\n"), {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
-      "Content-Disposition": `attachment; filename="mind-gym-${profile.username}.md"`,
+      "Content-Disposition": `attachment; filename="cortex30-${profile.username}.md"`,
     },
   });
 }

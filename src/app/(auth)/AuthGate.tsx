@@ -19,7 +19,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-xl lg:mx-0 lg:mt-[38vh]">
           <p className="font-mono text-[10px] tracking-[0.2em] text-neon/80 sm:text-[11px] sm:tracking-[0.35em]">30 DAYS · 4 CORTICES · 120 SYNAPSES</p>
           <h1 className="display neon glitch mt-3 text-[2.6rem] font-black leading-none sm:text-7xl">
-            Mind<span className="text-magenta [text-shadow:0_0_18px_#ff3dbb]">/</span>Gym
+            Cortex<span className="text-magenta [text-shadow:0_0_18px_#ff3dbb]">/</span>30
           </h1>
           <p className="mt-4 font-read text-cyan-50/75 [text-shadow:0_1px_12px_#05070d]">
             Rewire how you think. An AI coach dissects every thought, and every rep fires a new neuron in your brain.
