@@ -72,11 +72,19 @@ Open [http://localhost:3000](http://localhost:3000) and click **Create an accoun
 
 > No Gemini key yet? Set `AI_PROVIDER=mock` to click through the whole app with placeholder feedback.
 
+### Keeping your keys safe
+
+- Your real keys live only in `.env.local` on your computer and in Vercel's **Environment Variables**. `.env.local` is listed in `.gitignore`, so it is never committed. Only `.env.example` (placeholders) is in the repo.
+- Before every push, `git status` must **not** list `.env.local`.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is designed to be public (it ships to the browser); your data is protected by the Row Level Security rules in the SQL file. **Never** put the Supabase `service_role` / secret key anywhere in this project.
+- `GEMINI_API_KEY` (and `ANTHROPIC_API_KEY`) are only read on the server, in API routes, and never reach the browser.
+- If a key ever leaks, revoke it and create a new one (Google AI Studio → API keys; Supabase → Project Settings → API Keys), then update `.env.local` and Vercel.
+
 ### 7. Deploy to Vercel (free)
 
 1. Push this folder to a new GitHub repository.
 2. Go to [vercel.com](https://vercel.com), sign up with GitHub, click **Add New…**, then **Project**, and import the repository. Vercel detects Next.js automatically.
-3. Before clicking **Deploy**, open **Environment Variables** and add the same variables as in your `.env.local`.
+3. Before clicking **Deploy**, open **Environment Variables** and add the same variables as in your `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`). Vercel keeps them encrypted; they never go into GitHub.
 4. Click **Deploy**. In a minute you'll get a URL like `mind-gym-yourname.vercel.app`.
 5. On your phone, open that URL and choose **Add to Home Screen** to install it as an app.
 
