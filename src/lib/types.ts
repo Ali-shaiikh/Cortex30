@@ -42,10 +42,24 @@ export type StoredFeedback = Feedback & {
   /** Which exercise this answered (per-user plans shuffle exercises across days). */
   exercise_id?: string;
   raw_score?: number;
-  followup?: { question: string; answer: string; at: string };
+  /** Legacy: the single follow-up allowed before multiple follow-ups existed. */
+  followup?: ChatTurn;
+  followups?: ChatTurn[];
   /** For bonus exercises the generated prompt is stored alongside the feedback. */
   bonus?: BonusExercise;
 };
+
+export type ChatTurn = { question: string; answer: string; at?: string };
+
+/** Coach conversation limits per exercise. */
+export const MAX_FOLLOWUPS = 5;
+export const MAX_CLARIFICATIONS = 5;
+
+/** All follow-ups on a submission, including the legacy single one. */
+export function followupsOf(fb: StoredFeedback | undefined): ChatTurn[] {
+  if (!fb) return [];
+  return fb.followups ?? (fb.followup ? [fb.followup] : []);
+}
 
 export type Submission = {
   id: string;

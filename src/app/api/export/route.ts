@@ -1,6 +1,6 @@
 import { loadForApi } from "@/lib/data";
 import { jsonError } from "@/lib/api";
-import { CATEGORY_META } from "@/lib/types";
+import { CATEGORY_META, followupsOf } from "@/lib/types";
 
 /** Downloads every answer + coach feedback as Markdown. */
 export async function GET() {
@@ -51,7 +51,7 @@ export async function GET() {
       "",
       `**Try next:** ${fb.try_this_next}`,
       "",
-      ...(fb.followup ? [`**My follow-up:** ${fb.followup.question}`, "", `**Coach:** ${fb.followup.answer}`, ""] : []),
+      ...followupsOf(fb).flatMap((f) => [`**My follow-up:** ${f.question}`, "", `**Coach:** ${f.answer}`, ""]),
     );
   }
 

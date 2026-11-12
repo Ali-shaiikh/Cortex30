@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AIError, getProvider } from "./ai/providers";
-import type { BonusExercise, Category, Exercise, Feedback, Submission } from "./types";
+import type { BonusExercise, Category, ChatTurn, Exercise, Feedback, Submission } from "./types";
 import { CATEGORY_META } from "./types";
 
 export { AIError };
@@ -164,20 +164,44 @@ Write the next guiding question only. If hints were already given, go one step f
 }
 
 // ---------------------------------------------------------------------------
-// Follow-up question (one per submission)
+// Conversations with the coach
 // ---------------------------------------------------------------------------
 
+const thread = (turns: ChatTurn[]) =>
+  turns.length ? turns.map((t, i) => `Q${i + 1}: ${clip(t.question, 600)}\nA${i + 1}: ${clip(t.answer, 900)}`).join("\n\n") : "(none)";
+
+/** Follow-up questions about the coach's feedback, after the answer is locked. */
 export async function answerFollowUp(input: {
   exercise: Pick<Exercise, "prompt" | "reference_solution" | "category">;
   submission: Pick<Submission, "answer" | "reasoning" | "feedback_json">;
   question: string;
+  history: ChatTurn[];
 }): Promise<string> {
   const fb = input.submission.feedback_json;
   return (
     await getProvider().complete({
-      system: `${COACH}\nAnswer the learner's single follow-up question about your feedback in at most 180 words. Be concrete and use their answer as the example.`,
-      prompt: `EXERCISE:\n${input.exercise.prompt}\n\nREFERENCE SOLUTION:\n${input.exercise.reference_solution}\n\nLEARNER ANSWER:\n${clip(input.submission.answer, 2000)}\n\nLEARNER REASONING:\n${clip(input.submission.reasoning, 2000)}\n\nYOUR FEEDBACK: verdict ${fb.verdict}, score ${fb.score}. Went wrong: ${fb.where_your_thinking_went_wrong} How to think: ${fb.how_to_think_about_it}\n\nFOLLOW-UP QUESTION:\n${clip(input.question, 800)}`,
+      system: `${COACH}\nThe learner is asking follow-up questions about your feedback. Answer the latest question in at most 180 words. Be concrete, use their answer as the example, and build on the earlier conversation instead of repeating it.`,
+      prompt: `EXERCISE:\n${input.exercise.prompt}\n\nREFERENCE SOLUTION:\n${input.exercise.reference_solution}\n\nLEARNER ANSWER:\n${clip(input.submission.answer, 2000)}\n\nLEARNER REASONING:\n${clip(input.submission.reasoning, 2000)}\n\nYOUR FEEDBACK: verdict ${fb.verdict}, score ${fb.score}. Went wrong: ${fb.where_your_thinking_went_wrong} How to think: ${fb.how_to_think_about_it}\n\nEARLIER FOLLOW-UPS:\n${thread(input.history)}\n\nLATEST QUESTION:\n${clip(input.question, 800)}`,
       maxTokens: 6144,
+    })
+  ).trim();
+}
+
+/** Explains what an exercise is asking, before the learner answers. Never gives the answer away. */
+export async function clarifyQuestion(input: {
+  exercise: Pick<Exercise, "prompt" | "reference_solution" | "category" | "concept">;
+  question: string;
+  history: ChatTurn[];
+}): Promise<string> {
+  return (
+    await getProvider().complete({
+      system: `${COACH}
+The learner has NOT answered yet and is asking you to help them UNDERSTAND the question. In at most 150 words:
+- Explain what is being asked, define unfamiliar terms, clarify the expected format or scope, or give a small analogous example on a DIFFERENT topic.
+- NEVER reveal the answer, the key insight, the solution steps, any number from the solution, or whether a candidate answer is right.
+- If they ask for the answer or ask you to check their answer, say kindly that you can't before they submit, and suggest the hint button (a guiding question) instead.`,
+      prompt: `EXERCISE (${input.exercise.category}, concept: ${input.exercise.concept}):\n${input.exercise.prompt}\n\nREFERENCE SOLUTION (secret, never reveal any of it):\n${input.exercise.reference_solution}\n\nEARLIER QUESTIONS IN THIS CHAT:\n${thread(input.history)}\n\nLEARNER'S QUESTION:\n${clip(input.question, 800)}`,
+      maxTokens: 4096,
     })
   ).trim();
 }

@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { celebrate } from "@/components/brain/store";
-import { CATEGORY_META, type ExercisePublic, type StoredFeedback, type Submission } from "@/lib/types";
+import { CATEGORY_META, followupsOf, MAX_CLARIFICATIONS, MAX_FOLLOWUPS, type ChatTurn, type ExercisePublic, type Submission } from "@/lib/types";
+import { CoachChat } from "./CoachChat";
 import { FeedbackView } from "./FeedbackView";
 import { Icon } from "../ui/Icon";
 
@@ -17,8 +18,9 @@ type Props = {
   completesDay?: boolean;
 };
 
-type Draft = { confidence: number | null; answer: string; reasoning: string; hints: string[] };
-const EMPTY: Draft = { confidence: null, answer: "", reasoning: "", hints: [] };
+// `chat` holds "ask about this question" turns; kept with the draft so it survives a reload.
+type Draft = { confidence: number | null; answer: string; reasoning: string; hints: string[]; chat: ChatTurn[] };
+const EMPTY: Draft = { confidence: null, answer: "", reasoning: "", hints: [], chat: [] };
 
 function loadDraft(key: string): Draft {
   try {
@@ -36,10 +38,9 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [localSubmission, setSubmission] = useState<Submission | null>(null);
   const submission = localSubmission ?? initial;
-  const [busy, setBusy] = useState<null | "hint" | "grade" | "followup">(null);
+  const [busy, setBusy] = useState<null | "hint" | "grade">(null);
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [question, setQuestion] = useState("");
 
   // Drafts live in localStorage, which only exists after hydration.
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -109,20 +110,18 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
     }
   }
 
-  async function sendFollowUp() {
+  async function askClarification(question: string) {
+    const { turn } = await post<{ turn: ChatTurn }>("/api/clarify", { category: exercise.category, day: exercise.day, bonus, question, history: draft.chat });
+    setDraft((d) => ({ ...d, chat: [...d.chat, turn] }));
+  }
+
+  async function askFollowUp(question: string) {
     if (!submission) return;
-    setBusy("followup");
-    setError(null);
-    try {
-      const { followup } = await post<{ followup: StoredFeedback["followup"] }>("/api/followup", { submissionId: submission.id, question });
-      setSubmission({ ...submission, feedback_json: { ...submission.feedback_json, followup } });
-      setQuestion("");
-      router.refresh();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
+    const res = await post<{ followup: ChatTurn; warning?: string }>("/api/followup", { submissionId: submission.id, question });
+    const followups = [...followupsOf(submission.feedback_json), res.followup];
+    setSubmission({ ...submission, feedback_json: { ...submission.feedback_json, followups } });
+    if (res.warning) setError(res.warning);
+    router.refresh();
   }
 
   const ready = draft.confidence !== null && draft.answer.trim().length > 0 && draft.reasoning.trim().length > 0;
@@ -145,6 +144,19 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
         </header>
 
         <div className="whitespace-pre-line rounded-xl bg-white/[0.035] p-5 text-[1.02rem] leading-[1.7] text-[#eef2f7]">{exercise.prompt}</div>
+
+        {!locked && !submission && (
+          <CoachChat
+            id={`clarify-${draftKey}`}
+            title="Ask about this question"
+            note="Not sure what's being asked? The coach explains the question, terms and format, but won't give away the answer. Costs no points."
+            placeholder="e.g. What does 'valid' mean here?"
+            turns={draft.chat}
+            max={MAX_CLARIFICATIONS}
+            onAsk={askClarification}
+            disabled={busy !== null}
+          />
+        )}
 
         {locked && !submission && (
           <p className="rounded-xl bg-white/[0.035] p-4 text-sm text-white/60">
@@ -197,7 +209,7 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
                       {draft.hints.map((h, i) => (
                         <p key={i} className="rounded-xl bg-white/[0.04] p-3 text-[0.95rem] text-white/90">
                           <span className="mr-2 text-xs font-semibold text-neon">Hint {i + 1}</span>
-                          {h}
+                          {h.replace(/\*\*/g, "")}
                         </p>
                       ))}
                     </div>
@@ -255,32 +267,16 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
 
             <FeedbackView feedback={submission.feedback_json} hintsUsed={submission.hints_used} />
 
-            <div className="rounded-xl bg-white/[0.035] p-4">
-              {submission.feedback_json.followup ? (
-                <div className="space-y-2 font-read text-sm">
-                  <p className="text-white/60">
-                    <span className="label mr-2">You asked</span>
-                    {submission.feedback_json.followup.question}
-                  </p>
-                  <p className="whitespace-pre-line leading-relaxed text-white/85">
-                    <span className="label mr-2 !text-neon">Coach</span>
-                    {submission.feedback_json.followup.answer}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <label htmlFor={`fu-${draftKey}`} className="label">
-Ask the coach one follow-up question
-                  </label>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <input id={`fu-${draftKey}`} className="field" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. Why doesn't my second step hold?" maxLength={800} />
-                    <button className="btn btn-ghost shrink-0" disabled={question.trim().length < 3 || busy !== null} onClick={sendFollowUp}>
-                      {busy === "followup" ? "Asking…" : "Ask"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <CoachChat
+              id={`followup-${draftKey}`}
+              title="Ask the coach a follow-up"
+              note={`Still unsure about the feedback? Ask up to ${MAX_FOLLOWUPS} follow-up questions; the coach remembers this conversation.`}
+              placeholder="e.g. Why doesn't my second step hold?"
+              turns={followupsOf(submission.feedback_json)}
+              max={MAX_FOLLOWUPS}
+              onAsk={askFollowUp}
+              defaultOpen
+            />
           </div>
         )}
 

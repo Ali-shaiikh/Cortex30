@@ -55,8 +55,10 @@ flowchart LR
     D --> E[Answer + reasoning]
     E -. optional .-> H[Socratic hint<br/>-1 pt]
     H -.-> E
+    E -. optional .-> Q[Ask about the question]
+    Q -.-> E
     E --> F[Commit: answer locks]
-    F --> G[AI coach feedback<br/>+ 1 follow-up question]
+    F --> G[AI coach feedback<br/>+ up to 5 follow-ups]
     G --> N[Node ignites on the brain]
     N --> C
     C -->|all 4 done| S[Sharpening protocol<br/>drills + weak-spot bonus]
@@ -88,7 +90,8 @@ flowchart LR
 **The coach**
 - Grades **reasoning, not just answers**: a right answer with broken logic scores as *partially correct*.
 - Tags your **thinking pattern** on each answer (anchoring, confirmation bias, ignored base rates…), remembers your top three, and calls them out when they reappear.
-- Socratic **hints** that only ever ask a guiding question, plus **one follow-up question** per exercise.
+- **Ask about this question** before answering: the coach explains terms, scope and format, but never gives the answer away. Costs no points.
+- Socratic **hints** that only ever ask a guiding question, plus up to **5 follow-up questions** per exercise in a conversation the coach remembers.
 - **Weekly coach reports**, a daily "where you stand" summary, and a **final 30-day review** that compares your day-30 answers with day 1.
 
 **The brain**
@@ -177,6 +180,7 @@ You need [Node.js](https://nodejs.org) 20.9+ (22 recommended).
 ### 2. Create the database
 1. In Supabase, open **SQL Editor**, then **New query**.
 2. Paste the whole of [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) and click **Run**. You should see *"Success. No rows returned"*.
+3. Open another **New query**, paste [`supabase/migrations/0002_followups.sql`](supabase/migrations/0002_followups.sql) and click **Run** (enables multiple follow-up questions).
 
 ### 3. Turn off email confirmation
 Cortex30 logs in with a **username and password**. Behind the scenes each username becomes a fake, never-mailed address, so Supabase must not try to confirm it.
@@ -240,6 +244,7 @@ Open [localhost:3000](http://localhost:3000), click **Begin your journey**, then
 
 ```
 supabase/migrations/0001_init.sql   tables, RLS, functions (run once)
+supabase/migrations/0002_followups.sql  multiple follow-ups per exercise (run once)
 scripts/exercises/*.mjs             the 120 exercises (source) → src/data/exercises.json
 src/proxy.ts                        session refresh + route protection
 src/lib/day.ts                      Asia/Kolkata day + unlock logic

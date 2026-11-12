@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import type { StoredFeedback } from "@/lib/types";
 import { VerdictBadge } from "../ui/VerdictBadge";
 import { Icon } from "../ui/Icon";
+import { RichText } from "../ui/RichText";
 
 const SECTIONS: { key: keyof StoredFeedback; title: string; sub: string; accent: string }[] = [
   { key: "what_you_got_right", title: "What you got right", sub: "", accent: "#2ec4a0" },
@@ -44,7 +45,7 @@ export function FeedbackView({ feedback, hintsUsed }: { feedback: StoredFeedback
             <span className="text-sm font-semibold text-white">{s.title}</span>
             {s.sub && <span className="text-xs text-white/45">{s.sub}</span>}
           </h4>
-          <p className="whitespace-pre-line font-read text-[0.97rem] leading-[1.7] text-white/85">{String(feedback[s.key] ?? "")}</p>
+          <RichText text={String(feedback[s.key] ?? "")} className="font-read text-[0.97rem] leading-[1.7] text-white/85" />
         </motion.section>
       ))}
     </div>
