@@ -7,6 +7,7 @@ import { celebrate } from "@/components/brain/store";
 import { CATEGORY_META, followupsOf, MAX_CLARIFICATIONS, MAX_FOLLOWUPS, type ChatTurn, type ExercisePublic, type Submission } from "@/lib/types";
 import { CoachChat } from "./CoachChat";
 import { FeedbackView } from "./FeedbackView";
+import { GradingProgress } from "./GradingProgress";
 import { Icon } from "../ui/Icon";
 
 type Props = {
@@ -228,7 +229,7 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
                       {busy === "hint" ? "Thinking…" : "Get a hint (−1 pt)"}
                     </button>
                     <button type="button" className="btn btn-primary ml-auto" disabled={!ready || busy !== null} onClick={() => setConfirming(true)}>
-                      {busy === "grade" ? "Coach is reviewing…" : "Submit & lock"}
+                      {busy === "grade" ? "Analysing…" : "Submit & lock"}
                     </button>
                   </div>
                   {confirming && (
@@ -245,6 +246,7 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
                       </button>
                     </div>
                   )}
+                  {busy === "grade" && <GradingProgress />}
                 </motion.div>
               )}
             </AnimatePresence>
