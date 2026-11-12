@@ -3,9 +3,10 @@
 import * as THREE from "three";
 import { CATEGORIES, type Category } from "@/lib/types";
 
-export const HEMI_OFFSET = 0.45; // centre of each hemisphere on the x axis (the gap sits between them)
-// Proportions of a real brain: width ≈ 0.84 × length, height ≈ 0.6 × length.
-const RADII = { x: 0.42, y: 0.66, z: 1.0 };
+// Hemispheres touch along the midline, separated only by a thin longitudinal fissure.
+export const HEMI_OFFSET = 0.03;
+// Real proportions (length 1): width ≈ 0.84, height ≈ 0.62. Each hemisphere is half the width.
+const RADII = { x: 0.44, yTop: 0.66, yBottom: 0.36, zFront: 0.92, zBack: 1.0 };
 
 // ---------------------------------------------------------------------------
 // Seeded randomness + value noise
@@ -43,17 +44,24 @@ function valueNoise(x: number, y: number, z: number): number {
   );
 }
 
-/** Ridged multi-octave noise: sharp crests read as gyri, valleys as sulci. */
+/**
+ * Gyri: domain-warped ridged noise. Warping bends the ridges into long winding "worms" like real
+ * cortical folds; ridging makes sharp crests (gyri) and narrow valleys (sulci). Returns 0..1.
+ */
 function folds(x: number, y: number, z: number): number {
-  let sum = 0, amp = 0.6, freq = 3.1, norm = 0;
-  for (let o = 0; o < 3; o++) {
-    const n = 1 - Math.abs(valueNoise(x * freq, y * freq, z * freq));
-    sum += n * n * amp;
+  const w = 0.55;
+  const wx = x + w * valueNoise(x * 1.7 + 11, y * 1.7, z * 1.7);
+  const wy = y + w * valueNoise(x * 1.7, y * 1.7 + 23, z * 1.7);
+  const wz = z + w * valueNoise(x * 1.7, y * 1.7, z * 1.7 + 37);
+  let sum = 0, amp = 0.7, freq = 4.2, norm = 0;
+  for (let o = 0; o < 2; o++) {
+    const n = 1 - Math.abs(valueNoise(wx * freq, wy * freq, wz * freq));
+    sum += Math.pow(n, 3) * amp;
     norm += amp;
-    amp *= 0.5;
-    freq *= 2.1;
+    amp *= 0.45;
+    freq *= 2.2;
   }
-  return sum / norm; // 0..1
+  return sum / norm;
 }
 
 // ---------------------------------------------------------------------------
@@ -62,30 +70,63 @@ function folds(x: number, y: number, z: number): number {
 
 /** Fold height (0 = deep sulcus, 1 = gyrus crest) at a hemisphere direction. */
 export function foldAt(hemi: -1 | 1, d: THREE.Vector3): number {
-  return folds(d.x * RADII.x + hemi * 3.7, d.y * RADII.y, d.z * RADII.z);
+  return folds(d.x * RADII.x + hemi * 3.7, d.y * RADII.yTop, d.z);
 }
 
-/** Point on the folded surface of a hemisphere (hemi = -1 left, +1 right) in direction dir. */
+const smooth = (e0: number, e1: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Point on the folded surface of a hemisphere (hemi = -1 left, +1 right) in direction dir.
+ * Shapes a real cerebrum: flat medial wall, domed top, rounded frontal lobe, tapered occipital lobe,
+ * flat orbital underside, a temporal lobe hanging below the deep lateral (Sylvian) fissure.
+ */
 export function surfacePoint(hemi: -1 | 1, dir: THREE.Vector3, lift = 0, out = new THREE.Vector3()): THREE.Vector3 {
   const d = dir;
-  const inward = d.x * hemi < 0;
-  let rx = RADII.x * (inward ? 0.94 : 1);
-  let ry = RADII.y * (d.y < 0 ? 0.68 : 1);
-  const rz = RADII.z * (d.z > 0 ? 0.96 : 1.02);
-  // Temporal lobe: bulge outward and down at the lower sides.
-  const temporal = Math.max(0, 1 - Math.abs(d.y + 0.35) * 3) * Math.max(0, 1 - Math.abs(d.z - 0.1) * 1.6) * (inward ? 0 : 1);
+  const lateral = d.x * hemi; // > 0 outer side, < 0 medial side
+  // Medial wall is almost flat so the two hemispheres sit flush against each other.
+  let rx = lateral < 0 ? RADII.x * 0.1 : RADII.x;
+  let ry = d.y >= 0 ? RADII.yTop : RADII.yBottom;
+  const rz = d.z >= 0 ? RADII.zFront : RADII.zBack;
+
+  // Width is greatest towards the back (parietal), narrower at the frontal pole.
+  rx *= 1 - 0.12 * smooth(0.3, 1, d.z) + 0.05 * smooth(-0.2, -0.7, d.z) * (1 - smooth(-0.8, -1, d.z));
+  // Occipital pole tapers; top is flatter at the back.
+  if (d.z < -0.6) ry *= 1 - 0.25 * smooth(-0.6, -1, d.z);
+  // Frontal lobe: rounded front, flat orbital underside.
+  if (d.z > 0.3 && d.y < 0) ry *= 1 - 0.35 * smooth(0.3, 0.9, d.z);
+  // Temporal lobe: bulges down and out in the lower-lateral middle.
+  const temporal = lateral > 0 ? smooth(-0.05, -0.55, d.y) * (1 - smooth(0.15, 0.65, Math.abs(d.z - 0.05))) : 0;
+  ry *= 1 + 0.55 * temporal;
   rx *= 1 + 0.12 * temporal;
-  ry *= 1 + 0.06 * temporal;
-  // Frontal lobe a touch narrower and lower.
-  if (d.z > 0.5) {
-    rx *= 1 - 0.08 * (d.z - 0.5);
-    ry *= 1 - 0.1 * (d.z - 0.5);
-  }
+
   out.set(d.x * rx, d.y * ry, d.z * rz);
+
+  // Lateral (Sylvian) fissure: a deep groove running back and up along the side, above the temporal lobe.
+  let groove = 0;
+  if (lateral > 0.2 && d.z > -0.55 && d.z < 0.75) {
+    const line = -0.12 + 0.3 * (0.3 - d.z); // fissure height as it climbs towards the back
+    groove = Math.exp(-Math.pow((d.y - line) / 0.05, 2)) * smooth(0.2, 0.5, lateral);
+  }
+  // Longitudinal fissure: the top edge of the medial wall rolls inward.
+  const crest = lateral < 0.15 && d.y > 0 ? smooth(0.15, -0.05, lateral) * 0.04 : 0;
+
   const f = folds(out.x + hemi * 3.7, out.y, out.z);
-  const scale = 1 + 0.11 * (f - 0.5) + lift;
+  const scale = 1 + 0.1 * (f - 0.32) - 0.09 * groove - crest + lift;
   out.multiplyScalar(scale);
   out.x += hemi * HEMI_OFFSET;
+  return out;
+}
+
+/** Cerebellum: a wide ridged dome tucked under the occipital lobe, with a shallow midline notch. */
+export function cerebellumPoint(d: THREE.Vector3, out = new THREE.Vector3()): THREE.Vector3 {
+  const notch = 1 - 0.18 * Math.exp(-Math.pow(d.x / 0.18, 2)) * (d.z < 0 ? 1 : 0.3);
+  const ridges = 1 + 0.035 * Math.sin(d.y * 46 + d.z * 6); // fine horizontal folia
+  out.set(d.x * 0.56 * notch, d.y * 0.29, d.z * 0.34).multiplyScalar(ridges);
+  out.y -= 0.3;
+  out.z -= 0.6;
   return out;
 }
 
@@ -134,14 +175,20 @@ export function buildCloud(count: number): CloudData {
   const p = new THREE.Vector3();
   const colors = CATEGORIES.map((c) => new THREE.Color(REGION[c].color));
 
-  const cerebellum = Math.floor(count * 0.06);
+  const cerebellum = Math.floor(count * 0.11);
+  const stem = Math.floor(count * 0.025);
   for (let i = 0; i < count; i++) {
     randomDir(rand, dir);
     if (i < cerebellum) {
-      // Small cerebellum tucked under the back of the brain.
-      p.set(dir.x * 0.5, dir.y * 0.26 - 0.5, dir.z * 0.32 - 0.68);
-      const ridge = 1 + 0.05 * Math.sin(dir.y * 40);
-      p.multiplyScalar(ridge);
+      cerebellumPoint(dir, p);
+      foldValues[i] = 0.5 + 0.5 * Math.sin(dir.y * 46 + dir.z * 6);
+    } else if (i < cerebellum + stem) {
+      // Brainstem: a short tapered column dropping from under the centre.
+      const t = rand();
+      const a = rand() * Math.PI * 2;
+      const r = 0.11 - 0.03 * t;
+      p.set(Math.cos(a) * r, -0.18 - t * 0.55, -0.22 - t * 0.12 + Math.sin(a) * r * 0.9);
+      foldValues[i] = 0.35;
     } else {
       const hemi: -1 | 1 = rand() < 0.5 ? -1 : 1;
       // Rejection-sample towards gyrus crests so the folds read as glowing ridges.
@@ -149,7 +196,7 @@ export function buildCloud(count: number): CloudData {
         randomDir(rand, dir);
         dir.x = Math.abs(dir.x) * hemi * (rand() < 0.88 ? 1 : -1);
         foldValues[i] = foldAt(hemi, dir);
-        if (rand() < foldValues[i] ** 2 * 1.3) break;
+        if (rand() < Math.min(1, (foldValues[i] - 0.12) * 2)) break; // median fold ≈ 0.31
       }
       surfacePoint(hemi, dir, -rand() * 0.03, p);
       // Mark proximity to the hemisphere's two regions.
@@ -169,6 +216,21 @@ export function buildCloud(count: number): CloudData {
     rands[i] = rand();
   }
   return { positions, sizes, rands, folds: foldValues, tints, masks };
+}
+
+/** Displaced sphere geometry for the cerebellum's translucent shell. */
+export function buildCerebellumShell(detail = 32): THREE.BufferGeometry {
+  const geo = new THREE.SphereGeometry(1, detail * 1.5, detail);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const dir = new THREE.Vector3();
+  const p = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    dir.fromBufferAttribute(pos, i).normalize();
+    cerebellumPoint(dir, p);
+    pos.setXYZ(i, p.x, p.y, p.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
 }
 
 /** Displaced sphere geometry for the faint translucent shell of one hemisphere. */

@@ -9,7 +9,7 @@ import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { BrainData, BrainNode } from "@/lib/brainData";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/types";
-import { bridgeCurve, buildCloud, buildShell, corePosition, nodeLayout, REGION } from "./geometry";
+import { bridgeCurve, buildCerebellumShell, buildCloud, buildShell, corePosition, nodeLayout, REGION } from "./geometry";
 import { clearCelebration, getFx, useCelebration, type Celebration } from "./store";
 
 export type SceneOptions = {
@@ -165,6 +165,7 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
       <PointCloud count={particles} mastery={data.mastery} finisher={data.flags.finisher} ripple={rippleRef.current} reducedMotion={reducedMotion} />
       <Shell hemi={-1} />
       <Shell hemi={1} />
+      <Shell hemi={0} />
       <RegionGlows mastery={data.mastery} finisher={data.flags.finisher} filter={filter} />
       <Cores lit={data.flags.firstSpark} interactive={interactive} filter={filter} onFilter={onFilter} />
 
@@ -225,10 +226,10 @@ const cloudVertex = /* glsl */ `
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    float crest = smoothstep(0.35, 0.95, aFold);
+    float crest = smoothstep(0.28, 0.7, aFold);
     gl_PointSize = aSize * (0.75 + 0.7 * crest) * uPixelRatio * (12.0 / -mv.z);
 
-    vec3 centre = vec3(sign(position.x) * 0.45, 0.0, 0.0);
+    vec3 centre = vec3(sign(position.x) * 0.22, -0.05, -0.05);
     vec3 n = normalize(normalMatrix * normalize(position - centre));
     float fresnel = pow(1.0 - abs(dot(n, normalize(-mv.xyz))), 2.2);
 
@@ -324,8 +325,9 @@ const shellFragment = /* glsl */ `
   }
 `;
 
-function Shell({ hemi }: { hemi: -1 | 1 }) {
-  const geometry = useMemo(() => buildShell(hemi, 48), [hemi]);
+function Shell({ hemi }: { hemi: -1 | 0 | 1 }) {
+  // hemi 0 = cerebellum
+  const geometry = useMemo(() => (hemi === 0 ? buildCerebellumShell(28) : buildShell(hemi, 64)), [hemi]);
   const material = useMemo(
     () => new THREE.ShaderMaterial({ vertexShader: shellVertex, fragmentShader: shellFragment, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
     [],
