@@ -5,7 +5,7 @@ import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
 import { getExercise } from "@/lib/exercises";
 import { completionMap, fingerprint, key, mainSubmissions } from "@/lib/progress";
-import { consumeAiCall } from "@/lib/ratelimit";
+import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type Category } from "@/lib/types";
 
 const schema = z.object({ day: z.number().int().min(1).max(30) });
@@ -29,13 +29,14 @@ export const POST = handler(schema, async ({ day }) => {
   }
   const category = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "critical";
 
-  await consumeAiCall(ctx.supabase);
-  const bonus = await generateBonus({
-    pattern: top.pattern,
-    category,
-    day,
-    recentTitles: CATEGORIES.map((c) => getExercise(c, day)?.title ?? ""),
-  });
+  const bonus = await withAiQuota(ctx.supabase, ctx.userId, () =>
+    generateBonus({
+      pattern: top.pattern,
+      category,
+      day,
+      recentTitles: CATEGORIES.map((c) => getExercise(c, day)?.title ?? ""),
+    }),
+  );
   const { error } = await ctx.supabase.from("reports").insert({ user_id: ctx.userId, kind: "bonus", week: day, text: JSON.stringify(bonus) });
   if (error && error.code !== "23505") return jsonError(error.message, 500);
   return NextResponse.json({ bonus });

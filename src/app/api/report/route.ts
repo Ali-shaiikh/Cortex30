@@ -4,7 +4,7 @@ import { writeReport } from "@/lib/ai";
 import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
 import { completionMap, key } from "@/lib/progress";
-import { consumeAiCall } from "@/lib/ratelimit";
+import { withAiQuota } from "@/lib/ratelimit";
 import { buildReportStats } from "@/lib/stats";
 import { CATEGORIES } from "@/lib/types";
 
@@ -28,9 +28,8 @@ export const POST = handler(schema, async ({ kind, week }) => {
     if (!CATEGORIES.every((c) => done.has(key(c, 30)))) return jsonError("Complete day 30 first", 400);
   }
 
-  await consumeAiCall(ctx.supabase);
   const stats = buildReportStats(ctx.profile, ctx.submissions, ctx.today, kind === "weekly" ? (week! - 1) * 7 + 1 : 1, kind === "weekly" ? week! * 7 : 30);
-  const text = await writeReport({ kind, week, stats });
+  const text = await withAiQuota(ctx.supabase, ctx.userId, () => writeReport({ kind, week, stats }));
   const { data, error } = await ctx.supabase
     .from("reports")
     .insert({ user_id: ctx.userId, kind, week: kind === "weekly" ? week : null, text })

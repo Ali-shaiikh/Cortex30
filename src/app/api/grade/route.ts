@@ -5,7 +5,7 @@ import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
 import { getExercise, getExerciseById } from "@/lib/exercises";
 import { completionMap, nodeState, topPatterns } from "@/lib/progress";
-import { consumeAiCall } from "@/lib/ratelimit";
+import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type BonusExercise, type StoredFeedback } from "@/lib/types";
 
 const schema = z.object({
@@ -52,15 +52,16 @@ export const POST = handler(schema, async (body) => {
     }
   }
 
-  await consumeAiCall(supabase);
-  const feedback = await gradeAnswer({
-    exercise,
-    answer: body.answer,
-    reasoning: body.reasoning,
-    confidence: body.confidence,
-    pastPatterns: topPatterns(submissions, 3),
-    previous,
-  });
+  const feedback = await withAiQuota(supabase, userId, () =>
+    gradeAnswer({
+      exercise,
+      answer: body.answer,
+      reasoning: body.reasoning,
+      confidence: body.confidence,
+      pastPatterns: topPatterns(submissions, 3),
+      previous,
+    }),
+  );
 
   // Each Socratic hint costs one point.
   const finalScore = Math.max(0, Math.round((feedback.score - body.hintsUsed) * 10) / 10);

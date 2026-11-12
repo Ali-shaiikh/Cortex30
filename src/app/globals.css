@@ -27,6 +27,7 @@ body {
 }
 
 body {
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--font-sans);
   font-size: 1.06rem;
   font-weight: 500;
@@ -84,7 +85,7 @@ body {
     padding: 0.7rem 0.9rem;
     color: #e6f4ff;
     font-family: var(--font-read);
-    font-size: 0.95rem;
+    font-size: 1rem; /* >= 16px, or iOS zooms the page on focus */
     outline: none;
     transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
   }

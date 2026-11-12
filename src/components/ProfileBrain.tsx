@@ -9,7 +9,7 @@ import { BrainStage } from "./brain/BrainStage";
 import { FeedbackView } from "./exercise/FeedbackView";
 import { Icon } from "./ui/Icon";
 
-type Detail = { key: string; prompt: string; submission: Submission };
+type Detail = { key: string; submission: Submission };
 
 export function ProfileBrain({ data, details, username }: { data: BrainData; details: Detail[]; username: string }) {
   const [filter, setFilter] = useState<Category | null>(null);
@@ -19,8 +19,8 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
   const completed = data.nodes.filter((n) => n.state === "completed").length;
 
   return (
-    <div className="relative -mx-4 -mt-4 sm:-mt-6">
-      <div className="relative h-[calc(100dvh-3.5rem)] w-full">
+    <div className="relative -mx-4 -mb-[calc(6rem+env(safe-area-inset-bottom))] -mt-4 sm:-mb-24 sm:-mt-6">
+      <div className="relative h-[calc(100dvh-7.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full sm:h-[calc(100dvh-3.5rem)]">
         <BrainStage data={data} interactive className="absolute inset-0" filter={filter} onFilter={setFilter} onSelect={setSelected} />
 
         <div className="pointer-events-none absolute left-4 top-4 space-y-2">
@@ -44,10 +44,11 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
             ))}
           </div>
         </div>
-        <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-xs text-white/40">DRAG · ROTATE  ·  SCROLL · ZOOM  ·  CLICK A NODE TO DECODE</p>
+        <p className="pointer-events-none absolute bottom-4 left-1/2 hidden -translate-x-1/2 text-center font-mono text-[10px] tracking-widest text-cyan-100/40 sm:block">DRAG · ROTATE  ·  SCROLL · ZOOM  ·  CLICK A NODE TO DECODE</p>
+        <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] tracking-widest text-cyan-100/40 sm:hidden">DRAG · PINCH · TAP A NODE</p>
 
         {filter && (
-          <div className="glass absolute bottom-12 left-4 max-h-[40vh] w-64 overflow-y-auto p-3 text-sm sm:bottom-4">
+          <div className="glass absolute bottom-10 left-4 right-4 max-h-[35vh] overflow-y-auto p-3 text-sm sm:bottom-4 sm:right-auto sm:w-64">
             <div className="label mb-2" style={{ color: CATEGORY_META[filter].color }}>
               {CATEGORY_META[filter].label} pathway
             </div>

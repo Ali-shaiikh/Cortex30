@@ -35,7 +35,7 @@ export default async function CortexPage({ searchParams }: PageProps<"/">) {
       )}
 
       {/* Hero: the brain (rendered by the layout background) shows through the middle */}
-      <section className="relative flex min-h-[calc(100dvh-5.5rem)] flex-col justify-between gap-6">
+      <section className="relative flex min-h-[calc(100dvh-11rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col justify-between gap-6 sm:min-h-[calc(100dvh-5.5rem)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="glass w-full p-4 sm:w-72">
             <p className="label">{"// neural profile"}</p>
@@ -65,6 +65,17 @@ export default async function CortexPage({ searchParams }: PageProps<"/">) {
               </div>
               <ProgressBar value={stats.pct} className="h-1" />
             </div>
+            {/* Phones: compact cortex readout (the separate panel is desktop-only) */}
+            <div className="mt-3 grid grid-cols-4 gap-2 sm:hidden">
+              {CATEGORIES.map((c) => (
+                <div key={c}>
+                  <div className="truncate font-mono text-[9px] uppercase tracking-wider" style={{ color: CATEGORY_META[c].color }}>
+                    {CATEGORY_META[c].label.slice(0, 5)}
+                  </div>
+                  <ProgressBar value={(mastery[c].avg ?? 0) * 10} color={CATEGORY_META[c].color} className="mt-1 h-1" />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="glass hidden w-64 p-4 sm:block">
@@ -91,7 +102,7 @@ export default async function CortexPage({ searchParams }: PageProps<"/">) {
               <p className="font-mono text-[11px] tracking-[0.3em] text-neon/70">
                 {todayLeft.length ? `SESSION ${session} · ${todayDone}/4 SYNAPSES FIRED` : `SESSION ${session} COMPLETE · NEXT UNLOCK AT 00:00 IST`}
               </p>
-              <Link href={`/day/${today}`} className="btn btn-primary group px-10 py-4 text-sm shadow-[0_0_40px_-8px_#6fe7ff]">
+              <Link href={`/day/${today}`} className="btn btn-primary group w-full max-w-xs px-10 py-4 text-sm shadow-[0_0_40px_-8px_#6fe7ff] sm:w-auto">
                 {todayLeft.length ? (todayDone ? "Continue session" : "Get started") : "Review session"}
                 <Icon name="arrowRight" className="transition-transform group-hover:translate-x-1" />
               </Link>

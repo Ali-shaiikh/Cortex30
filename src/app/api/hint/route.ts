@@ -5,7 +5,7 @@ import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
 import { getExercise } from "@/lib/exercises";
 import { completionMap, nodeState } from "@/lib/progress";
-import { consumeAiCall } from "@/lib/ratelimit";
+import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type BonusExercise } from "@/lib/types";
 
 const schema = z.object({
@@ -35,7 +35,8 @@ export const POST = handler(schema, async (body) => {
     }
   }
 
-  await consumeAiCall(ctx.supabase);
-  const hint = await getHint({ exercise, draftAnswer: body.answer, draftReasoning: body.reasoning, previousHints: body.previousHints });
+  const hint = await withAiQuota(ctx.supabase, ctx.userId, () =>
+    getHint({ exercise, draftAnswer: body.answer, draftReasoning: body.reasoning, previousHints: body.previousHints }),
+  );
   return NextResponse.json({ hint });
 });

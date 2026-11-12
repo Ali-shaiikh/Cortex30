@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/immutability, react-hooks/refs -- three.js objects are mutated imperatively inside useFrame, the idiomatic r3f pattern. */
 
-import { Billboard, Html, Line, OrbitControls, Sparkles } from "@react-three/drei";
+import { Billboard, Line, OrbitControls, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -28,27 +28,66 @@ type Props = SceneOptions & {
   onFilter?: (c: Category | null) => void;
 };
 
+/** DOM labels drawn over the canvas; the scene moves them to their projected 3D positions each frame. */
+type Overlay = { cores: Partial<Record<Category, HTMLElement | null>>; tip: HTMLElement | null; tipPos: THREE.Vector3 | null };
+
 const AMBER = new THREE.Color("#ffb020");
 const ROTATION_SPEED = 0.05; // rad/s
 
 export default function BrainScene(props: Props) {
+  const overlay = useRef<Overlay>({ cores: {}, tip: null, tipPos: null });
+  const [hover, setHover] = useState<BrainNode | null>(null);
+  const onHoverNode = (node: BrainNode | null, pos: THREE.Vector3 | null) => {
+    overlay.current.tipPos = pos;
+    setHover(node);
+    props.onHover?.(node);
+  };
   return (
-    <Canvas
-      dpr={props.dpr}
-      camera={{ position: [0, 0.35, props.interactive ? 3.4 : 3.9], fov: 42, near: 0.1, far: 50 }}
-      gl={{ antialias: !props.bloom, alpha: true, powerPreference: "high-performance" }}
-      style={{ background: "transparent" }}
-    >
-      <Brain {...props} />
+    <div className="relative h-full w-full">
+      <Canvas
+        dpr={props.dpr}
+        camera={{ position: [0, 0.35, props.interactive ? 3.4 : 3.9], fov: 42, near: 0.1, far: 50 }}
+        gl={{ antialias: !props.bloom, alpha: true, powerPreference: "high-performance" }}
+        style={{ background: "transparent" }}
+      >
+        <Brain {...props} overlay={overlay} onHoverNode={onHoverNode} />
+        {props.interactive && <OrbitControlsWithIdle reducedMotion={props.reducedMotion} />}
+        {props.bloom && (
+          <EffectComposer multisampling={0}>
+            <Bloom mipmapBlur intensity={1.15} luminanceThreshold={0.12} luminanceSmoothing={0.3} radius={0.75} />
+          </EffectComposer>
+        )}
+      </Canvas>
+      {/* Region labels + node tooltip as plain DOM (positioned by the scene each frame) */}
       {props.interactive && (
-        <OrbitControlsWithIdle reducedMotion={props.reducedMotion} />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c}
+              ref={(el) => {
+                overlay.current.cores[c] = el;
+              }}
+              onClick={() => props.onFilter?.(props.filter === c ? null : c)}
+              className={`pointer-events-auto absolute left-0 top-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold backdrop-blur transition-colors ${props.filter === c ? "bg-white/20" : "bg-black/40 hover:bg-white/10"}`}
+              style={{ borderColor: `${REGION[c].color}88`, color: REGION[c].color, transform: "translate(-9999px, 0)" }}
+            >
+              {CATEGORY_META[c].label}
+            </button>
+          ))}
+          {hover && (
+            <div
+              ref={(el) => {
+                overlay.current.tip = el;
+              }}
+              className="absolute left-0 top-0"
+              style={{ transform: "translate(-9999px, 0)" }}
+            >
+              <NodeTooltip node={hover} />
+            </div>
+          )}
+        </div>
       )}
-      {props.bloom && (
-        <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={1.15} luminanceThreshold={0.12} luminanceSmoothing={0.3} radius={0.75} />
-        </EffectComposer>
-      )}
-    </Canvas>
+    </div>
   );
 }
 
@@ -82,8 +121,25 @@ function OrbitControlsWithIdle({ reducedMotion }: { reducedMotion: boolean }) {
 // Shared idle tracker: auto-rotation resumes after 3 s without interaction.
 const idle = { last: 0, active: true };
 
-function Brain({ data, interactive, particles, reducedMotion, filter, onHover, onSelect, onFilter }: Props) {
+type BrainProps = Props & { overlay: React.RefObject<Overlay>; onHoverNode: (node: BrainNode | null, pos: THREE.Vector3 | null) => void };
+
+const projected = new THREE.Vector3();
+function placeLabel(el: HTMLElement | null | undefined, world: THREE.Vector3, group: THREE.Object3D, camera: THREE.Camera, w: number, h: number, lift: number) {
+  if (!el) return;
+  projected.copy(world).applyMatrix4(group.matrixWorld).project(camera);
+  if (projected.z > 1) {
+    el.style.transform = "translate(-9999px, 0)";
+    return;
+  }
+  const x = ((projected.x + 1) / 2) * w;
+  const y = ((1 - projected.y) / 2) * h - lift;
+  el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+}
+
+function Brain({ data, interactive, particles, reducedMotion, filter, onSelect, overlay, onHoverNode }: BrainProps) {
   const group = useRef<THREE.Group>(null);
+  const size = useThree((s) => s.size);
+  const corePositions = useMemo(() => Object.fromEntries(CATEGORIES.map((c) => [c, corePosition(c)])) as Record<Category, THREE.Vector3>, []);
   const celebration = useCelebration();
   const camera = useThree((s) => s.camera);
   const anim = useRef({ targetRot: null as number | null, dolly: 0, ripple: -1, start: 0 });
@@ -158,6 +214,13 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
       if (a.ripple > 2.2) a.ripple = -1;
     }
     rippleRef.current.value = a.ripple;
+
+    if (interactive) {
+      g.updateMatrixWorld();
+      const o = overlay.current;
+      for (const c of CATEGORIES) placeLabel(o.cores[c], corePositions[c], g, camera, size.width, size.height, 14);
+      if (o.tipPos) placeLabel(o.tip, o.tipPos, g, camera, size.width, size.height, 18);
+    }
   });
 
   return (
@@ -167,7 +230,7 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
       <Shell hemi={1} />
       <Shell hemi={0} />
       <RegionGlows mastery={data.mastery} finisher={data.flags.finisher} filter={filter} />
-      <Cores lit={data.flags.firstSpark} interactive={interactive} filter={filter} onFilter={onFilter} />
+      <Cores lit={data.flags.firstSpark} />
 
       {layout.map((l) => {
         const node = byKey.get(`${l.category}-${l.day}`)!;
@@ -184,7 +247,7 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
             dimmed={Boolean(filter && filter !== l.category)}
             interactive={interactive}
             reducedMotion={reducedMotion}
-            onHover={onHover}
+            onHover={onHoverNode}
             onSelect={onSelect}
           />
         );
@@ -376,7 +439,7 @@ function RegionGlows({ mastery, finisher, filter }: { mastery: BrainData["master
   );
 }
 
-function Cores({ lit, interactive, filter, onFilter }: { lit: boolean; interactive: boolean; filter?: Category | null; onFilter?: (c: Category | null) => void }) {
+function Cores({ lit }: { lit: boolean }) {
   return (
     <>
       {CATEGORIES.map((c) => {
@@ -387,17 +450,6 @@ function Cores({ lit, interactive, filter, onFilter }: { lit: boolean; interacti
               <sphereGeometry args={[lit ? 0.032 : 0.022, 16, 16]} />
               <meshBasicMaterial color={color} toneMapped={false} />
             </mesh>
-            {interactive && (
-              <Html center position={[0, 0.14, 0]} zIndexRange={[10, 0]}>
-                <button
-                  onClick={() => onFilter?.(filter === c ? null : c)}
-                  className={`whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold backdrop-blur transition ${filter === c ? "bg-white/20" : "bg-black/40 hover:bg-white/10"}`}
-                  style={{ borderColor: `${REGION[c].color}88`, color: REGION[c].color }}
-                >
-                  {CATEGORY_META[c].label}
-                </button>
-              </Html>
-            )}
           </group>
         );
       })}
@@ -418,7 +470,7 @@ type NodeProps = {
   dimmed: boolean;
   interactive: boolean;
   reducedMotion: boolean;
-  onHover?: (n: BrainNode | null) => void;
+  onHover?: (n: BrainNode | null, pos: THREE.Vector3 | null) => void;
   onSelect?: (n: BrainNode) => void;
 };
 
@@ -485,12 +537,12 @@ function MindNode({ node, position, parentPosition, parentCompleted, celebration
         onPointerOver: (e: { stopPropagation: () => void }) => {
           e.stopPropagation();
           setHovered(true);
-          onHover?.(node);
+          onHover?.(node, position);
           document.body.style.cursor = node.state === "locked" ? "default" : "pointer";
         },
         onPointerOut: () => {
           setHovered(false);
-          onHover?.(null);
+          onHover?.(null, null);
           document.body.style.cursor = "";
         },
         onClick: (e: { stopPropagation: () => void }) => {
@@ -556,7 +608,6 @@ function MindNode({ node, position, parentPosition, parentCompleted, celebration
             {look.sparkle && !reducedMotion && !dimmed && <Sparkles count={6} scale={0.12} size={1.6} speed={0.6} color={color} />}
           </>
         )}
-        {hovered && interactive && <NodeTooltip node={node} />}
       </group>
     </>
   );
@@ -565,23 +616,21 @@ function MindNode({ node, position, parentPosition, parentCompleted, celebration
 function NodeTooltip({ node }: { node: BrainNode }) {
   const color = CATEGORY_META[node.category].color;
   return (
-    <Html center position={[0, 0.09, 0]} zIndexRange={[20, 10]} style={{ pointerEvents: "none" }}>
-      <div className="glass-strong w-52 px-3 py-2 text-xs">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
-          <span>{CATEGORY_META[node.category].label}</span>
-          <span>Day {node.day}</span>
-        </div>
-        <div className="mt-1 font-semibold text-white">{node.title}</div>
-        <div className="text-white/55">{node.concept}</div>
-        {node.state === "completed" ? (
-          <div className="mt-1 font-mono text-white/80">
-            {node.score}/10 · {node.verdict?.replace("_", " ")}
-          </div>
-        ) : (
-          <div className="mt-1 text-white/50">{node.state === "available" ? "Ready to train" : "Locked"}</div>
-        )}
+    <div className="glass-strong pointer-events-none w-52 px-3 py-2 text-xs">
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider" style={{ color }}>
+        <span>{CATEGORY_META[node.category].label}</span>
+        <span>Day {node.day}</span>
       </div>
-    </Html>
+      <div className="mt-1 font-semibold text-white">{node.title}</div>
+      <div className="text-white/55">{node.concept}</div>
+      {node.state === "completed" ? (
+        <div className="mt-1 font-mono text-white/80">
+          {node.score}/10 · {node.verdict?.replace("_", " ")}
+        </div>
+      ) : (
+        <div className="mt-1 text-white/50">{node.state === "available" ? "Ready to train" : "Locked"}</div>
+      )}
+    </div>
   );
 }
 

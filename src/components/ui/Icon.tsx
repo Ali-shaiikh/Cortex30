@@ -62,6 +62,16 @@ const PATHS = {
   // Stored memory: stacked data layers
   memory: <path d="M4 7l8-4 8 4-8 4zM4 12l8 4 8-4M4 17l8 4 8-4" />,
   check: <path d="M4 12.5l5 5L20 6.5" />,
+  // Two hemispheres seen from above, with gyri
+  brain: (
+    <>
+      <path d="M11.2 4.2C9.8 3 7.4 3.2 6.4 4.8 4.6 5 3.6 6.8 4.2 8.4 2.9 9.6 3 11.8 4.4 12.8 3.8 14.6 4.8 16.6 6.6 16.9 7.2 19 9.4 20 11.2 19.1z" />
+      <path d="M12.8 4.2c1.4-1.2 3.8-1 4.8.6 1.8.2 2.8 2 2.2 3.6 1.3 1.2 1.2 3.4-.2 4.4.6 1.8-.4 3.8-2.2 4.1-.6 2.1-2.8 3.1-4.6 2.2z" />
+      <path d="M7.5 8.5c1 .2 1.6 1 1.5 2M6.8 13.2c1.2-.4 2.4.2 2.8 1.2M16.5 8.5c-1 .2-1.6 1-1.5 2M17.2 13.2c-1.2-.4-2.4.2-2.8 1.2" />
+    </>
+  ),
+  // Diagnostics: bar chart with a pulse
+  chart: <path d="M4 20V10M10 20V5M16 20v-8M22 20H2" />,
   implant: <path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z" />,
   implantOn: (
     <>

@@ -2,11 +2,13 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { startDive, stopDive } from "@/components/brain/store";
 import type { AuthState } from "./actions";
 import { Icon } from "@/components/ui/Icon";
+
+const subscribeNoop = () => () => {};
 
 type Props = {
   mode: "login" | "signup";
@@ -17,6 +19,8 @@ type Props = {
 export function AuthForm({ mode, action, next }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const [diving, setDiving] = useState(false);
+  // Portals need document.body, which only exists after hydration.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const isSignup = mode === "signup";
 
   // While the server checks the credentials, the camera dives into the brain.
@@ -90,7 +94,7 @@ export function AuthForm({ mode, action, next }: Props) {
       </form>
 
       {/* Portal: the panel is transformed by its slide animation, which would trap a fixed overlay. */}
-      {typeof document !== "undefined" && createPortal(<AnimatePresence>{diving && pending && <BigBang />}</AnimatePresence>, document.body)}
+      {mounted && createPortal(<AnimatePresence>{diving && pending && <BigBang />}</AnimatePresence>, document.body)}
     </>
   );
 }

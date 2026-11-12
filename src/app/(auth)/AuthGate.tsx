@@ -12,13 +12,13 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <div className="relative z-10 min-h-dvh">
       <motion.section
-        className="mx-auto flex min-h-dvh max-w-6xl flex-col justify-end px-4 pb-16 pt-10 text-center sm:justify-center lg:text-left"
+        className="mx-auto flex min-h-dvh max-w-6xl flex-col justify-end px-4 pb-[calc(2.5rem+env(safe-area-inset-bottom))] pt-[44dvh] text-center sm:justify-center sm:pt-10 lg:text-left"
         animate={{ x: open ? "-8%" : "0%", opacity: open ? 0.35 : 1, filter: open ? "blur(2px)" : "blur(0px)" }}
         transition={{ type: "spring", stiffness: 120, damping: 20 }}
       >
         <div className="mx-auto max-w-xl lg:mx-0 lg:mt-[38vh]">
-          <p className="font-mono text-[11px] tracking-[0.35em] text-neon/80">30 DAYS · 4 CORTICES · 120 SYNAPSES</p>
-          <h1 className="display neon glitch mt-3 text-5xl font-black sm:text-7xl">
+          <p className="font-mono text-[10px] tracking-[0.2em] text-neon/80 sm:text-[11px] sm:tracking-[0.35em]">30 DAYS · 4 CORTICES · 120 SYNAPSES</p>
+          <h1 className="display neon glitch mt-3 text-[2.6rem] font-black leading-none sm:text-7xl">
             Mind<span className="text-magenta [text-shadow:0_0_18px_#ff3dbb]">/</span>Gym
           </h1>
           <p className="mt-4 font-read text-cyan-50/75 [text-shadow:0_1px_12px_#05070d]">
@@ -55,7 +55,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
               onClick={() => setOpen(false)}
             />
             <motion.div
-              className="fixed inset-x-0 bottom-0 z-30 flex justify-center p-3 sm:inset-y-0 sm:left-auto sm:right-0 sm:items-center sm:p-8"
+              className="fixed inset-x-0 bottom-0 z-30 flex max-h-dvh justify-center overflow-y-auto p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:inset-y-0 sm:left-auto sm:right-0 sm:items-center sm:p-8"
               initial={{ x: "110%", y: 0 }}
               animate={{ x: 0, y: 0 }}
               exit={{ x: "110%" }}

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { startIntro } from "./brain/store";
 
 type Props = {
@@ -13,14 +13,16 @@ type Props = {
 
 const GLYPHS = "0123456789ABCDEF∑∂∇λπΔ≈∫⊕σθμ<>/{}[]";
 const DURATION = 4300; // ms of "loading" before the brain bursts into view
+const subscribeNoop = () => () => {};
 
 /** Post-login cinematic: data rain, live calculations and a typed boot log, then the user's brain big-bangs into view. */
 export function BootSequence({ username, synapses, cortex }: Props) {
   const router = useRouter();
   const [phase, setPhase] = useState<"loading" | "reveal" | "done">("loading");
   const [progress, setProgress] = useState(0);
-  const reduced = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
-  const total = reduced ? 900 : DURATION;
+  // Read on the client only (server and first client render must match, or hydration fails).
+  const reduced = useSyncExternalStore(subscribeNoop, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
+  const revealed = useRef(false);
 
   const lines = useMemo(
     () => [
@@ -35,7 +37,20 @@ export function BootSequence({ username, synapses, cortex }: Props) {
     [username, synapses, cortex],
   );
 
+  // Runs exactly once, even when React mounts effects twice in development.
+  const reveal = useCallback(() => {
+    if (revealed.current) return;
+    revealed.current = true;
+    setPhase("reveal");
+    startIntro();
+    setTimeout(() => {
+      setPhase("done");
+      router.replace("/", { scroll: false });
+    }, 900);
+  }, [router]);
+
   useEffect(() => {
+    const total = reduced ? 900 : DURATION;
     const start = performance.now();
     let raf = 0;
     const tick = () => {
@@ -46,20 +61,7 @@ export function BootSequence({ username, synapses, cortex }: Props) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function reveal() {
-    setPhase((p) => {
-      if (p !== "loading") return p;
-      startIntro();
-      setTimeout(() => {
-        setPhase("done");
-        router.replace("/", { scroll: false });
-      }, 900);
-      return "reveal";
-    });
-  }
+  }, [reduced, reveal]);
 
   const visibleLines = Math.min(lines.length, Math.floor(progress * (lines.length + 0.6)));
 

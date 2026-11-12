@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <main className="relative min-h-dvh overflow-hidden">
       {/* Layer 1: the rotating 3D brain */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 lg:left-[30%] lg:[mask-image:linear-gradient(to_right,transparent,black_25%)]">
+      <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 h-[55dvh] sm:inset-0 sm:h-auto lg:left-[30%] lg:[mask-image:linear-gradient(to_right,transparent,black_25%)]">
         <BrainStage data={brain} className="absolute inset-0" />
       </div>
 
