@@ -30,11 +30,11 @@ export function SummaryCard({ text, stale, enoughData }: { text: string | null; 
 
   return (
     <section className="glass p-5">
-      <div className="label text-rim">Where you stand</div>
+      <div className="display neon text-xs font-bold">Neural status report</div>
       {text ? (
-        <p className="mt-2 leading-relaxed text-white/85">{text}</p>
+        <p className="mt-2 font-read leading-relaxed text-cyan-50/85">{text}</p>
       ) : (
-        <p className="mt-2 text-white/50">{busy ? "Your coach is reading your answers…" : enoughData ? "No summary yet." : "Complete a couple of exercises and your coach will summarise where you stand."}</p>
+        <p className="mt-2 text-white/50">{busy ? "Coach is scanning your synapses…" : enoughData ? "No report yet." : "Fire a couple of synapses and your coach will report where you stand."}</p>
       )}
       {busy && text && <p className="mt-2 text-xs text-white/40">Updating for today…</p>}
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
@@ -47,10 +47,10 @@ export function ReportCard({ week, text, unlocked }: { week: number; text: strin
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+    <div className="border border-neon/10 bg-black/30 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="font-semibold">Week {week}</h3>
-        <span className="font-mono text-xs text-white/40">day {week * 7}</span>
+        <h3 className="display text-xs font-bold text-cyan-50">Transmission {String(week).padStart(2, "0")}</h3>
+        <span className="font-mono text-[10px] uppercase tracking-wider text-cyan-100/40">week {week} · S{week * 7}</span>
       </div>
       {text ? (
         <Markdown text={text} />
@@ -71,10 +71,10 @@ export function ReportCard({ week, text, unlocked }: { week: number; text: strin
             }
           }}
         >
-          {busy ? "Writing your report…" : "Generate coach report"}
+          {busy ? "Decoding…" : "Receive transmission"}
         </button>
       ) : (
-        <p className="text-sm text-white/40">Unlocks on day {week * 7}.</p>
+        <p className="font-mono text-[11px] uppercase tracking-wider text-cyan-100/40">Unlocks at session {week * 7}</p>
       )}
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
     </div>

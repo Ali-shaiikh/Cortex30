@@ -25,12 +25,12 @@ export function BonusSection({ day, bonus, submission }: { day: number; bonus: E
   return (
     <section className="glass flex flex-wrap items-center gap-4 p-5">
       <div className="flex-1">
-        <div className="label text-rim">Day complete ✦</div>
-        <p className="mt-1 text-white/80">Want an optional Weak Spot bonus? The coach will write one drill aimed at your most frequent thinking pattern.</p>
+        <div className="display neon text-xs font-bold">Session complete ✦</div>
+        <p className="mt-1 font-read text-sm text-cyan-50/80">Optional weak-spot drill: the coach writes one exercise aimed at your most frequent thinking pattern. It orbits your brain as a satellite node.</p>
         {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
       </div>
       <button className="btn btn-primary" onClick={generate} disabled={busy}>
-        {busy ? "Writing your drill…" : "Generate bonus"}
+        {busy ? "Compiling drill…" : "Generate drill"}
       </button>
     </section>
   );

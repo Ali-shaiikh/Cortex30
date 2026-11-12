@@ -6,9 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error?: string; username?: string };
 
+/** Where to go after logging in. The home page plays the brain boot sequence (?boot=1). */
 function safeNext(next: FormDataEntryValue | null): string {
   const value = typeof next === "string" ? next : "";
-  return value.startsWith("/") && !value.startsWith("//") ? value : "/";
+  return value.startsWith("/") && !value.startsWith("//") && value !== "/" ? value : "/?boot=1";
 }
 
 export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -38,7 +39,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
       username,
     };
   }
-  redirect("/");
+  redirect("/?boot=1");
 }
 
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {

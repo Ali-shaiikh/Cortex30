@@ -10,7 +10,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { BrainData, BrainNode } from "@/lib/brainData";
 import { CATEGORIES, CATEGORY_META, type Category } from "@/lib/types";
 import { bridgeCurve, buildCloud, buildShell, corePosition, nodeLayout, REGION } from "./geometry";
-import { clearCelebration, useCelebration, type Celebration } from "./store";
+import { clearCelebration, getFx, useCelebration, type Celebration } from "./store";
 
 export type SceneOptions = {
   interactive: boolean;
@@ -128,11 +128,31 @@ function Brain({ data, interactive, particles, reducedMotion, filter, onHover, o
       if (!interactive) camera.position.z = THREE.MathUtils.damp(camera.position.z, baseZ - 0.9, 2.5, delta);
     } else {
       if (a.targetRot !== null) a.targetRot = null;
-      if (!interactive) camera.position.z = THREE.MathUtils.damp(camera.position.z, baseZ, 1.5, delta);
+      if (!interactive && !getFx().dive) camera.position.z = THREE.MathUtils.damp(camera.position.z, baseZ, 1.5, delta);
       const idleFor = (performance.now() - idle.last) / 1000;
       if (!reducedMotion && (!interactive || idleFor > 3)) g.rotation.y += ROTATION_SPEED * delta;
     }
-    if (!reducedMotion) g.scale.setScalar(1 + 0.012 * Math.sin(t * 0.9));
+    const fx = getFx();
+    // Big-bang reveal: the brain bursts out of a point, overshoots, settles; a light ripple follows.
+    let introScale = 1;
+    if (fx.intro) {
+      const p = (Date.now() - fx.intro) / 2400;
+      if (p < 1) {
+        const c = 1.9;
+        const x = Math.max(0, p);
+        introScale = 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); // easeOutBack
+        introScale = Math.max(0.001, introScale);
+        g.rotation.y += delta * 2.2 * (1 - x);
+        if (a.ripple < 0 && x > 0.15) a.ripple = 0;
+      }
+    }
+    // Dive: on login the camera flies into the brain.
+    if (fx.dive && !interactive) {
+      camera.position.z = THREE.MathUtils.damp(camera.position.z, 0.35, 1.6, delta);
+      g.rotation.y += delta * 1.5;
+    }
+    const breathe = reducedMotion ? 1 : 1 + 0.012 * Math.sin(t * 0.9);
+    g.scale.setScalar(breathe * introScale);
     if (a.ripple >= 0) {
       a.ripple += delta * 0.9;
       if (a.ripple > 2.2) a.ripple = -1;

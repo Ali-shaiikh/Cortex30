@@ -8,7 +8,7 @@ type Neuron = { x: number; y: number; vx: number; vy: number; r: number; phase: 
 type Signal = { a: number; b: number; t: number; speed: number; color: string };
 
 /** Full-screen animated neural network: drifting neurons, synapses, and signals flowing between them. */
-export function NeuralField({ className = "" }: { className?: string }) {
+export function NeuralField({ className = "", density = 1 }: { className?: string; density?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function NeuralField({ className = "" }: { className?: string }) {
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       link = Math.max(110, Math.min(170, Math.sqrt(w * h) / 7));
-      const count = Math.round(Math.min(110, Math.max(36, (w * h) / 14000)));
+      const count = Math.round(Math.min(110, Math.max(30, (w * h) / 14000)) * density);
       neurons = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
@@ -176,7 +176,7 @@ export function NeuralField({ className = "" }: { className?: string }) {
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [density]);
 
   return <canvas ref={ref} aria-hidden className={className} />;
 }

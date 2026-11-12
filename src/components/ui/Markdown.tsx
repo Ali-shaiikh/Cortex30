@@ -8,13 +8,13 @@ function inline(text: string) {
 export function Markdown({ text }: { text: string }) {
   const blocks = text.trim().split(/\n{2,}/);
   return (
-    <div className="space-y-3 text-[0.95rem] leading-relaxed text-white/80">
+    <div className="space-y-3 font-read text-[0.93rem] leading-relaxed text-cyan-50/80">
       {blocks.map((block, i) => {
         const lines = block.split("\n");
         if (/^#{1,4}\s/.test(lines[0])) {
           return (
             <div key={i} className="space-y-1">
-              <h4 className="label pt-1 text-rim">{lines[0].replace(/^#+\s*/, "")}</h4>
+              <h4 className="display pt-1 text-[11px] font-bold text-neon">{lines[0].replace(/^#+\s*/, "")}</h4>
               {lines.length > 1 && <Markdown text={lines.slice(1).join("\n")} />}
             </div>
           );

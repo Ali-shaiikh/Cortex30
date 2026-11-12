@@ -27,7 +27,7 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
             <div className="font-mono text-xs text-white/50">@{username}</div>
             <div className="font-mono text-lg">
               {completed}
-              <span className="text-white/40">/120 nodes lit</span>
+              <span className="text-cyan-100/40">/120 synapses online</span>
             </div>
           </div>
           <div className="pointer-events-auto flex flex-wrap gap-1.5">
@@ -35,7 +35,7 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
               <button
                 key={c}
                 onClick={() => setFilter(filter === c ? null : c)}
-                className={`rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur ${filter === c ? "bg-white/15" : "bg-black/30"}`}
+                className={`border px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest backdrop-blur ${filter === c ? "bg-neon/15" : "bg-black/40"}`}
                 style={{ borderColor: `${CATEGORY_META[c].color}77`, color: CATEGORY_META[c].color }}
               >
                 {CATEGORY_META[c].label}
@@ -43,12 +43,12 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
             ))}
           </div>
         </div>
-        <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-xs text-white/40">Drag to rotate · scroll to zoom · hover a node · click to open</p>
+        <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-xs text-white/40">DRAG · ROTATE  ·  SCROLL · ZOOM  ·  CLICK A NODE TO DECODE</p>
 
         {filter && (
           <div className="glass absolute bottom-12 left-4 max-h-[40vh] w-64 overflow-y-auto p-3 text-sm sm:bottom-4">
             <div className="label mb-2" style={{ color: CATEGORY_META[filter].color }}>
-              {CATEGORY_META[filter].label} path
+              {CATEGORY_META[filter].label} pathway
             </div>
             <ul className="space-y-1">
               {data.nodes
@@ -101,9 +101,9 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
                 </div>
               ) : (
                 <div className="mt-4">
-                  <p className="text-sm text-white/60">This node is ready to train.</p>
+                  <p className="font-mono text-xs uppercase tracking-wider text-cyan-100/60">◇ Synapse ready to fire.</p>
                   <Link href={`/day/${selected.day}?c=${selected.category}`} className="btn btn-primary mt-3">
-                    Start it →
+                    Fire it →
                   </Link>
                 </div>
               )}

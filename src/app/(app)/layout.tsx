@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <BrainBackground data={brain} />
       <DayWatcher startDate={profile.start_date} today={today} />
       <Header username={profile.username} day={today} />
-      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-24 pt-4 sm:pt-6">{children}</main>
+      <main className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-24 pt-4 sm:pt-6">{children}</main>
     </div>
   );
 }

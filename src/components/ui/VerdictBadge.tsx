@@ -12,7 +12,7 @@ const STYLE: Record<Verdict, { label: string; cls: string }> = {
 export function VerdictBadge({ verdict, score }: { verdict: Verdict; score?: number }) {
   const s = STYLE[verdict];
   return (
-    <span className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-semibold ${s.cls}`}>
+    <span className={`inline-flex items-center gap-2 border px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider ${s.cls}`}>
       {s.label}
       {score !== undefined && <span className="font-mono">{score}/10</span>}
     </span>

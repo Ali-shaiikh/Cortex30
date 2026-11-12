@@ -28,3 +28,36 @@ export function useCelebration(): Celebration | null {
     () => null,
   );
 }
+
+// --- Cinematic effects: "dive" (camera flies into the brain on login) and "intro" (big-bang reveal) ---
+type Fx = { dive: boolean; intro: number | null };
+let fx: Fx = { dive: false, intro: null };
+const fxListeners = new Set<() => void>();
+const emitFx = () => fxListeners.forEach((l) => l());
+
+export function startDive() {
+  fx = { ...fx, dive: true };
+  emitFx();
+}
+export function stopDive() {
+  fx = { ...fx, dive: false };
+  emitFx();
+}
+/** Starts the big-bang reveal: the brain bursts out from a point of light. */
+export function startIntro() {
+  fx = { dive: false, intro: Date.now() };
+  emitFx();
+}
+export function getFx(): Fx {
+  return fx;
+}
+export function useFx(): Fx {
+  return useSyncExternalStore(
+    (l) => {
+      fxListeners.add(l);
+      return () => fxListeners.delete(l);
+    },
+    () => fx,
+    () => fx,
+  );
+}

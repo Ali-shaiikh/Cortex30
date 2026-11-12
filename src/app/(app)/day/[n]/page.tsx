@@ -23,11 +23,11 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
   if (day > today) {
     return (
       <div className="glass mx-auto mt-10 max-w-md p-8 text-center">
-        <div className="text-3xl">🔒</div>
-        <h1 className="mt-2 text-xl font-semibold">Day {day} is locked</h1>
-        <p className="mt-1 text-white/55">It unlocks at midnight (IST) in {day - today} day{day - today > 1 ? "s" : ""}.</p>
+        <div className="display text-3xl text-magenta">⛒</div>
+        <h1 className="display neon mt-2 text-lg font-bold">Session {String(day).padStart(2, "0")} locked</h1>
+        <p className="mt-1 font-mono text-xs uppercase tracking-wider text-cyan-100/55">Unlocks at 00:00 IST in {day - today} day{day - today > 1 ? "s" : ""}</p>
         <Link href="/" className="btn btn-ghost mt-5">
-          Back to today
+          Back to cortex
         </Link>
       </div>
     );
@@ -51,11 +51,11 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
         <Link href={day > 1 ? `/day/${day - 1}` : "/"} className="btn btn-ghost px-3 py-1.5" aria-label="Previous day">
           ←
         </Link>
-        <h1 className="font-mono text-lg font-semibold">
-          Day {day}
-          <span className="text-white/35">/30</span>
+        <h1 className="display neon text-base font-bold">
+          Session {String(day).padStart(2, "0")}
+          <span className="text-cyan-100/35">/30</span>
         </h1>
-        {day < today && <span className="text-xs text-white/45">Late answers count for progress, not streaks</span>}
+        {day < today && <span className="hidden font-mono text-[10px] uppercase tracking-wider text-cyan-100/45 sm:inline">Late reps count for progress, not streaks</span>}
         {day < today && (
           <Link href={`/day/${day + 1}`} className="btn btn-ghost ml-auto px-3 py-1.5" aria-label="Next day">
             →
@@ -75,14 +75,14 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
               aria-selected={selected}
               href={`/day/${day}?c=${cat}`}
               scroll={false}
-              className={`rounded-xl border px-3 py-2.5 text-sm transition ${selected ? "bg-white/[0.08]" : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05]"}`}
+              className={`border px-3 py-2.5 text-sm backdrop-blur transition ${selected ? "bg-neon/[0.08]" : "border-neon/10 bg-ink/50 hover:bg-neon/[0.05]"}`}
               style={selected ? { borderColor: `${meta.color}88` } : undefined}
             >
-              <div className="font-semibold" style={{ color: meta.color }}>
+              <div className="display text-[11px] font-bold" style={{ color: meta.color }}>
                 {meta.label}
               </div>
-              <div className="font-mono text-[11px] text-white/50">
-                {sub ? `✓ ${sub.score}/10` : states[cat] === "available" ? "open" : "locked"}
+              <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-100/50">
+                {sub ? `▣ fired ${sub.score}/10` : states[cat] === "available" ? "◇ ready" : "⛒ locked"}
               </div>
             </Link>
           );
