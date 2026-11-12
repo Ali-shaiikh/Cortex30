@@ -211,3 +211,69 @@ input[type="range"].confidence::-moz-range-thumb {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Focus mode: the question & answer panel only. Calm, high-contrast, readable;
+   the cyberpunk HUD stays everywhere else.
+   --------------------------------------------------------------------------- */
+.focus-panel {
+  position: relative;
+  background: #0b0f17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  font-family: var(--font-read);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #e7ecf3;
+}
+.focus-panel .label {
+  font-family: var(--font-read);
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  font-weight: 600;
+  color: rgba(231, 236, 243, 0.7);
+}
+.focus-panel .display {
+  font-family: var(--font-read);
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+.focus-panel .btn {
+  font-family: var(--font-read);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  clip-path: none;
+  border-radius: 10px;
+}
+.focus-panel .btn-primary {
+  background: #e7ecf3;
+  color: #0b0f17;
+}
+.focus-panel .btn-primary:hover:not(:disabled) {
+  background: #ffffff;
+  color: #0b0f17;
+}
+.focus-panel .btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: #e7ecf3;
+}
+.focus-panel .field {
+  font-size: 1rem;
+  line-height: 1.55;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.focus-panel .field:focus {
+  border-color: rgba(111, 231, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(111, 231, 255, 0.12);
+}
+/* No scanlines while a question is on screen */
+body:has(.focus-panel) .scanlines {
+  display: none;
+}

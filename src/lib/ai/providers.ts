@@ -11,34 +11,63 @@ export class AIError extends Error {
 }
 
 // --- Google Gemini (default, free tier) via REST ----------------------------------
+// The "-latest" aliases are often overloaded (503s, 90 s+ waits), so we pin a fast model, cap each
+// attempt with a timeout, and fall back to the lite model when the first one is busy.
+const GEMINI_ATTEMPT_TIMEOUT_MS = 35_000;
+const RETRYABLE = new Set([404, 429, 500, 503, 504]);
+
+async function geminiOnce(model: string, key: string, { system, prompt, json, maxTokens = 4096 }: CompleteArgs): Promise<string> {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    signal: AbortSignal.timeout(GEMINI_ATTEMPT_TIMEOUT_MS),
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: maxTokens,
+        ...(json ? { responseMimeType: "application/json" } : {}),
+      },
+    }),
+  });
+  if (!res.ok) {
+    const body = (await res.text()).slice(0, 300);
+    throw new AIError(res.status === 429 ? "The free Gemini quota is busy. Try again in a minute." : `Gemini error ${res.status}: ${body}`, res.status);
+  }
+  const data = await res.json();
+  const text: string = (data?.candidates?.[0]?.content?.parts ?? [])
+    .filter((p: { text?: string; thought?: boolean }) => p.text && !p.thought)
+    .map((p: { text: string }) => p.text)
+    .join("");
+  if (!text) throw new AIError("Gemini returned an empty response");
+  return text;
+}
+
 const gemini: Provider = {
   name: "gemini",
-  async complete({ system, prompt, json, maxTokens = 4096 }) {
+  async complete(args) {
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new AIError("GEMINI_API_KEY is not set", 500);
-    const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: maxTokens,
-          ...(json ? { responseMimeType: "application/json" } : {}),
-        },
-      }),
-    });
-    if (res.status === 429) throw new AIError("The free Gemini quota is busy. Try again in a minute.", 429);
-    if (!res.ok) throw new AIError(`Gemini error ${res.status}: ${(await res.text()).slice(0, 300)}`);
-    const data = await res.json();
-    const text: string = (data?.candidates?.[0]?.content?.parts ?? [])
-      .filter((p: { text?: string; thought?: boolean }) => p.text && !p.thought)
-      .map((p: { text: string }) => p.text)
-      .join("");
-    if (!text) throw new AIError("Gemini returned an empty response");
-    return text;
+    const models = [process.env.GEMINI_MODEL || "gemini-3.5-flash", process.env.GEMINI_FALLBACK_MODEL || "gemini-3.5-flash-lite"];
+    let lastError: AIError = new AIError("Gemini is unavailable");
+    for (const model of new Set(models)) {
+      try {
+        return await geminiOnce(model, key, args);
+      } catch (error) {
+        const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+        if (timedOut) {
+          lastError = new AIError("The coach took too long to answer. Try again.", 504);
+          continue;
+        }
+        if (error instanceof AIError && RETRYABLE.has(error.status)) {
+          lastError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw lastError;
   },
 };
 

@@ -135,6 +135,6 @@ src/components/brain/*              procedural 3D brain, mind map, SVG fallback
 - **"Account created, but Supabase wants email confirmation"**: step 3 wasn't saved. Turn off *Confirm email*, then log in.
 - **"Email address is invalid" on sign-up**: some Supabase projects reject the `.local` test domain. Change the domain in `src/lib/auth.ts` (`usernameToEmail`) to one you own, e.g. `users.yourname.dev`. Existing accounts would need to be recreated.
 - **"You've used all 15 coach calls for today"**: wait until midnight IST, or raise `AI_DAILY_LIMIT` (it must stay within your Gemini quota).
-- **"The free Gemini quota is busy"**: the free tier allows a limited number of requests per minute. Wait a moment and retry. You can also try another model with `GEMINI_MODEL`.
+- **"The free Gemini quota is busy"**: the free tier allows a limited number of requests per minute. Wait a moment and retry. The app automatically falls back from `GEMINI_MODEL` (default `gemini-3.5-flash`) to `GEMINI_FALLBACK_MODEL` (`gemini-3.5-flash-lite`).
 - **The brain doesn't appear**: your browser has WebGL turned off, so a static brain is shown instead. On phones and low-end laptops the brain automatically uses fewer particles and no bloom. With "reduce motion" switched on in your OS, it stops spinning.
 - **Redirected to `/setup`**: `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is missing. Restart `npm run dev` after editing `.env.local`.

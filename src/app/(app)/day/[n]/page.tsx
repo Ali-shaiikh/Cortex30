@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BonusSection } from "@/components/exercise/BonusSection";
-import { ExerciseFlow } from "@/components/exercise/ExerciseFlow";
+import { DaySession } from "@/components/exercise/DaySession";
+import { SharpeningProtocol } from "@/components/exercise/SharpeningProtocol";
 import { requireUserData } from "@/lib/data";
 import { getExercise } from "@/lib/exercises";
-import { completionMap, key, lockReason, nodeState } from "@/lib/progress";
-import { CATEGORIES, CATEGORY_META, toPublic, type BonusExercise, type Category } from "@/lib/types";
+import { completionMap, fingerprint, key, lockReason, nodeState } from "@/lib/progress";
+import { CATEGORIES, toPublic, type BonusExercise, type Category, type ExercisePublic, type Submission } from "@/lib/types";
 import { Icon } from "@/components/ui/Icon";
 
 export async function generateMetadata({ params }: PageProps<"/day/[n]">): Promise<Metadata> {
@@ -38,7 +39,6 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
   const states = Object.fromEntries(CATEGORIES.map((cat) => [cat, nodeState(cat, day, today, done)])) as Record<Category, string>;
   const requested = CATEGORIES.find((cat) => cat === c);
   const active: Category = requested ?? CATEGORIES.find((cat) => states[cat] === "available") ?? "logic";
-  const exercise = getExercise(active, day)!;
   const remaining = CATEGORIES.filter((cat) => !done.has(key(cat, day)));
   const dayComplete = remaining.length === 0;
 
@@ -64,53 +64,35 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="tablist">
-        {CATEGORIES.map((cat) => {
-          const meta = CATEGORY_META[cat];
-          const sub = done.get(key(cat, day));
-          const selected = cat === active;
-          return (
-            <Link
-              key={cat}
-              role="tab"
-              aria-selected={selected}
-              href={`/day/${day}?c=${cat}`}
-              scroll={false}
-              className={`border px-3 py-2.5 text-sm backdrop-blur transition ${selected ? "bg-neon/[0.08]" : "border-neon/10 bg-ink/50 hover:bg-neon/[0.05]"}`}
-              style={selected ? { borderColor: `${meta.color}88` } : undefined}
-            >
-              <div className="display text-[11px] font-bold" style={{ color: meta.color }}>
-                {meta.label}
-              </div>
-              <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-100/50">
-                {sub ? (
-                  <>
-                    <Icon name="synapse" size={11} /> fired {sub.score}/10
-                  </>
-                ) : states[cat] === "available" ? (
-                  <>
-                    <Icon name="node" size={11} /> ready
-                  </>
-                ) : (
-                  <>
-                    <Icon name="lock" size={11} /> locked
-                  </>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      <ExerciseFlow
-        key={`${active}-${day}`}
-        exercise={toPublic(exercise)}
-        submission={done.get(key(active, day)) ?? null}
-        locked={lockReason(active, day, today, done)}
-        completesDay={remaining.length === 1 && remaining[0] === active}
+      <DaySession
+        day={day}
+        initial={active}
+        items={
+          Object.fromEntries(
+            CATEGORIES.map((cat) => [
+              cat,
+              {
+                exercise: toPublic(getExercise(cat, day)!),
+                submission: done.get(key(cat, day)) ?? null,
+                locked: lockReason(cat, day, today, done),
+                completesDay: remaining.length === 1 && remaining[0] === cat,
+              },
+            ]),
+          ) as Record<Category, { exercise: ExercisePublic; submission: Submission | null; locked: string | null; completesDay: boolean }>
+        }
       />
 
-      {dayComplete && <BonusSection day={day} bonus={bonus ? toPublic({ ...bonus, day }) : null} submission={bonusSub} />}
+      {dayComplete && (
+        <SharpeningProtocol
+          day={day}
+          lessons={CATEGORIES.map((cat) => {
+            const sub = done.get(key(cat, day))!;
+            return { category: cat, title: getExercise(cat, day)!.title, lesson: sub.feedback_json.transferable_lesson, pattern: sub.thinking_pattern };
+          })}
+          topPattern={fingerprint(submissions).find((f) => !f.fixed)?.pattern ?? null}
+          bonus={<BonusSection day={day} bonus={bonus ? toPublic({ ...bonus, day }) : null} submission={bonusSub} />}
+        />
+      )}
     </div>
   );
 }
