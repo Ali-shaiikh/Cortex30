@@ -76,7 +76,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
             CATEGORIES.map((cat) => [
               cat,
               {
-                exercise: toPublic(exerciseOf(cat)),
+                exercise: { ...toPublic(exerciseOf(cat)), tuning: plan.tuning(cat, day) },
                 submission: done.get(key(cat, day)) ?? null,
                 locked: lockReason(cat, day, today, done),
                 completesDay: remaining.length === 1 && remaining[0] === cat,

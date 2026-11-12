@@ -107,7 +107,10 @@ export type Profile = {
 };
 
 /** What the browser gets about an exercise: never the reference solution or rubric. */
-export type ExercisePublic = Pick<Exercise, "id" | "day" | "category" | "title" | "prompt" | "minutes" | "concept" | "revisit_of">;
+export type ExercisePublic = Pick<Exercise, "id" | "day" | "category" | "title" | "prompt" | "minutes" | "concept" | "revisit_of"> & {
+  /** Set when the self-calibrating plan pitched this exercise above or below the default schedule. */
+  tuning?: "harder" | "easier" | null;
+};
 
 export function toPublic(e: Exercise | BonusExercise & { day: number; id?: string; minutes?: number }): ExercisePublic {
   return {

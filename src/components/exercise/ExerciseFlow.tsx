@@ -139,6 +139,14 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
               <Icon name="chip" size={11} className="mr-1" />
               {exercise.concept}
             </span>
+            {exercise.tuning && (
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs ${exercise.tuning === "harder" ? "bg-amber-300/10 text-amber-100" : "bg-sky-300/10 text-sky-100"}`}
+                title="Cortex30 picks each exercise from your recent scores in this skill"
+              >
+                Calibrated: {exercise.tuning}
+              </span>
+            )}
           </div>
           <h2 className="display text-xl font-semibold text-white sm:text-2xl">{exercise.title}</h2>
         </header>
