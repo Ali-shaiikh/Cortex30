@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { celebrate } from "@/components/brain/store";
 import { CATEGORY_META, type ExercisePublic, type StoredFeedback, type Submission } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
+import { Icon } from "../ui/Icon";
 
 type Props = {
   exercise: ExercisePublic;
@@ -135,7 +136,10 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
             <span style={{ color: meta.color }}>{bonus ? `Weak spot drill · ${meta.label} cortex` : `${meta.label} cortex`}</span>
             <span className="text-cyan-100/40">S{String(exercise.day).padStart(2, "0")}</span>
             <span className="text-cyan-100/40">~{exercise.minutes} min</span>
-            <span className="border border-neon/20 px-2 py-0.5 text-neon/80">⌁ {exercise.concept}</span>
+            <span className="border border-neon/20 px-2 py-0.5 text-neon/80">
+              <Icon name="chip" size={11} className="mr-1" />
+              {exercise.concept}
+            </span>
           </div>
           <h2 className="display text-lg font-bold text-cyan-50 sm:text-xl">{exercise.title}</h2>
         </header>
@@ -146,7 +150,10 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
         </div>
 
         {locked && !submission && (
-          <p className="border border-cyan-100/10 bg-black/30 p-4 font-mono text-xs uppercase tracking-wider text-cyan-100/60">⛒ Synapse locked · {locked}</p>
+          <p className="border border-cyan-100/10 bg-black/30 p-4 font-mono text-xs uppercase tracking-wider text-cyan-100/60">
+            <Icon name="lock" size={12} className="mr-1.5" />
+            Synapse locked · {locked}
+          </p>
         )}
 
         {!locked && !submission && (
@@ -209,7 +216,10 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
                   </div>
                   {confirming && (
                     <div className="flex flex-wrap items-center gap-3 border border-magenta/40 bg-magenta/10 p-3 text-sm">
-                      <span className="font-mono text-xs uppercase tracking-wider text-pink-100">⚠ Committed memories are permanent.</span>
+                      <span className="font-mono text-xs uppercase tracking-wider text-pink-100">
+                        <Icon name="alert" size={12} className="mr-1.5" />
+                        Committed memories are permanent.
+                      </span>
                       <button type="button" className="btn btn-primary ml-auto py-1.5" onClick={submit}>
                         Commit
                       </button>
@@ -229,9 +239,10 @@ export function ExerciseFlow({ exercise, submission: initial, locked, bonus = fa
             <details className="group border border-neon/10 bg-black/30 p-4" open={false}>
               <summary className="flex cursor-pointer items-center justify-between font-mono text-xs uppercase tracking-wider text-cyan-100/70">
                 <span>
-                  ▣ Archived memory · confidence {submission.confidence}%
+                  <Icon name="memory" size={12} className="mr-1.5" />
+                  Archived memory · confidence {submission.confidence}%
                 </span>
-                <span className="text-white/40 group-open:rotate-180">⌄</span>
+                <Icon name="chevronDown" className="text-cyan-100/40 transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-3 space-y-3 font-read text-sm">
                 <div>

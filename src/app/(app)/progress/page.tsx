@@ -7,6 +7,7 @@ import { requireUserData } from "@/lib/data";
 import { localDate } from "@/lib/day";
 import { achievements, allMastery, calibration, fingerprint, mainSubmissions, overall, trend } from "@/lib/progress";
 import { CATEGORIES, CATEGORY_META } from "@/lib/types";
+import { Icon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = { title: "Progress" };
 
@@ -56,7 +57,7 @@ export default async function ProgressPage() {
                     {s.level}
                     <span className="ml-2 font-mono text-cyan-100/45">last-5 {s.avg?.toFixed(1) ?? "-"}</span>
                   </span>
-                  <span className="text-cyan-100/45">{s.nextLevel ? `→ ${s.nextLevel}` : "Top level"}</span>
+                  <span className="text-cyan-100/45">{s.nextLevel ? <>next: {s.nextLevel}</> : "Top level"}</span>
                 </div>
                 <ProgressBar value={s.toNext * 100} color="rgba(255,255,255,0.55)" className="h-1" />
               </div>
@@ -117,7 +118,13 @@ export default async function ProgressPage() {
                 </div>
                 <span className="w-6 text-right font-mono text-xs text-cyan-100/60">{f.count}</span>
                 <span className={`w-16 px-2 py-0.5 text-center text-[10px] font-semibold ${f.fixed ? "bg-emerald-400/15 text-emerald-200" : "bg-amber-400/15 text-amber-200"}`}>
-                  {f.fixed ? "fixed ✓" : "active"}
+                  {f.fixed ? (
+                    <>
+                      <Icon name="check" size={10} /> fixed
+                    </>
+                  ) : (
+                    "active"
+                  )}
                 </span>
               </li>
             ))}
@@ -134,10 +141,12 @@ export default async function ProgressPage() {
             <div key={a.id} className={`border p-3 ${a.unlocked ? "border-neon/40 bg-neon/[0.07]" : "border-neon/[0.07] bg-black/30"}`}>
               <div className="flex items-center justify-between">
                 <span className={`font-semibold ${a.unlocked ? "text-white" : "text-cyan-100/55"}`}>{a.name}</span>
-                <span aria-label={a.unlocked ? "unlocked" : "locked"}>{a.unlocked ? "✦" : "○"}</span>
+                <Icon name={a.unlocked ? "implantOn" : "implant"} size={16} className={a.unlocked ? "text-neon drop-shadow-[0_0_6px_#6fe7ff]" : "text-cyan-100/30"} aria-label={a.unlocked ? "unlocked" : "locked"} />
               </div>
               <p className="text-xs text-cyan-100/55">{a.description}</p>
-              <p className="mt-1 font-mono text-[10px] text-neon/70">⌁ {a.visual}</p>
+              <p className="mt-1 flex items-start gap-1 font-mono text-[10px] text-neon/70">
+                <Icon name="spark" size={10} className="mt-0.5" /> {a.visual}
+              </p>
               {!a.unlocked && <ProgressBar value={a.progress * 100} color="rgba(255,255,255,0.4)" className="mt-2 h-1" />}
             </div>
           ))}

@@ -5,6 +5,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { requireUserData } from "@/lib/data";
 import { allMastery, completionMap, key, nodeState, overall } from "@/lib/progress";
 import { CATEGORIES, CATEGORY_META } from "@/lib/types";
+import { Icon } from "@/components/ui/Icon";
 
 /** Landing: the user's brain fills the screen, with a HUD and a single call to action. */
 export default async function CortexPage({ searchParams }: PageProps<"/">) {
@@ -92,17 +93,17 @@ export default async function CortexPage({ searchParams }: PageProps<"/">) {
               </p>
               <Link href={`/day/${today}`} className="btn btn-primary group px-10 py-4 text-sm shadow-[0_0_40px_-8px_#6fe7ff]">
                 {todayLeft.length ? (todayDone ? "Continue session" : "Get started") : "Review session"}
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+                <Icon name="arrowRight" className="transition-transform group-hover:translate-x-1" />
               </Link>
               <div className="flex flex-wrap justify-center gap-2">
                 {catchUp.map(({ c, d }) => (
                   <Link key={c} href={`/day/${d}?c=${c}`} className="border border-neon/20 bg-ink/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest backdrop-blur hover:bg-neon/10" style={{ color: CATEGORY_META[c].color }}>
-                    ↺ {CATEGORY_META[c].label} S{String(d).padStart(2, "0")}
+                    <Icon name="loop" size={11} /> {CATEGORY_META[c].label} S{String(d).padStart(2, "0")}
                   </Link>
                 ))}
                 {reportDue && (
                   <Link href="/progress#reports" className="border border-magenta/40 bg-ink/60 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-magenta backdrop-blur hover:bg-magenta/10">
-                    ✦ Week {reportDue / 7} transmission ready
+                    <Icon name="transmission" size={11} /> Week {reportDue / 7} transmission ready
                   </Link>
                 )}
               </div>

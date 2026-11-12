@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ExercisePublic, Submission } from "@/lib/types";
 import { ExerciseFlow } from "./ExerciseFlow";
+import { Icon } from "../ui/Icon";
 
 export function BonusSection({ day, bonus, submission }: { day: number; bonus: ExercisePublic | null; submission: Submission | null }) {
   const router = useRouter();
@@ -25,7 +26,9 @@ export function BonusSection({ day, bonus, submission }: { day: number; bonus: E
   return (
     <section className="glass flex flex-wrap items-center gap-4 p-5">
       <div className="flex-1">
-        <div className="display neon text-xs font-bold">Session complete ✦</div>
+        <div className="display neon flex items-center gap-1.5 text-xs font-bold">
+          <Icon name="spark" size={13} /> Session complete
+        </div>
         <p className="mt-1 font-read text-sm text-cyan-50/80">Optional weak-spot drill: the coach writes one exercise aimed at your most frequent thinking pattern. It orbits your brain as a satellite node.</p>
         {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
       </div>

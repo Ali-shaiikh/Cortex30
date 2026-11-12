@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/(auth)/actions";
+import { Icon } from "./ui/Icon";
 
 const NAV = [
   { href: "/", label: "Cortex" },
@@ -39,7 +40,8 @@ export function Header({ username, day }: { username: string; day: number }) {
         <span className="hidden font-mono text-[11px] text-magenta/80 md:inline">@{username}</span>
         <form action={logout}>
           <button className="px-1 py-1.5 font-mono text-[10px] uppercase tracking-widest text-cyan-100/40 hover:text-magenta" title="Log out">
-            ⏻<span className="hidden sm:inline"> Disconnect</span>
+            <Icon name="power" size={13} />
+            <span className="hidden sm:inline"> Disconnect</span>
           </button>
         </form>
       </div>

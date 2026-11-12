@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { startDive, stopDive } from "@/components/brain/store";
 import type { AuthState } from "./actions";
+import { Icon } from "@/components/ui/Icon";
 
 type Props = {
   mode: "login" | "signup";
@@ -73,7 +74,8 @@ export function AuthForm({ mode, action, next }: Props) {
         </label>
         {state.error && (
           <p role="alert" className="border-l-2 border-magenta bg-magenta/10 px-3 py-2 font-mono text-xs text-pink-100">
-            ⚠ ACCESS DENIED · {state.error}
+            <Icon name="alert" size={12} className="mr-1.5" />
+            ACCESS DENIED · {state.error}
           </p>
         )}
         <button className="btn btn-primary w-full" disabled={pending}>

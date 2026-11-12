@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, type ReactNode } from "react";
 import { CATEGORIES, CATEGORY_META } from "@/lib/types";
+import { Icon } from "@/components/ui/Icon";
 
 /** Hero first; the login/signup panel slides in when the visitor starts their journey. */
 export function AuthGate({ children }: { children: ReactNode }) {
@@ -36,7 +37,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
           </div>
           <button onClick={() => setOpen(true)} className="btn btn-primary group mt-8 px-8 py-4 text-sm">
             Begin your journey
-            <span className="transition-transform group-hover:translate-x-1">→</span>
+            <Icon name="arrowRight" className="transition-transform group-hover:translate-x-1" />
           </button>
           <p className="mt-3 font-mono text-[10px] tracking-widest text-cyan-100/40">FREE · NO EMAIL · 10 MIN A DAY</p>
         </div>
@@ -65,7 +66,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
                   onClick={() => setOpen(false)}
                   className="absolute -top-9 right-0 font-mono text-[11px] tracking-widest text-cyan-100/60 hover:text-neon"
                 >
-                  ✕ CLOSE
+                  <Icon name="close" size={11} /> CLOSE
                 </button>
                 {children}
               </div>

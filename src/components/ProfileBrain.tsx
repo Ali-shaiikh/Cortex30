@@ -7,6 +7,7 @@ import type { BrainData, BrainNode } from "@/lib/brainData";
 import { CATEGORIES, CATEGORY_META, type Category, type Submission } from "@/lib/types";
 import { BrainStage } from "./brain/BrainStage";
 import { FeedbackView } from "./exercise/FeedbackView";
+import { Icon } from "./ui/Icon";
 
 type Detail = { key: string; prompt: string; submission: Submission };
 
@@ -84,7 +85,7 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
                   <p className="text-sm text-white/50">{selected.concept}</p>
                 </div>
                 <button onClick={() => setSelected(null)} className="btn btn-ghost px-2.5 py-1" aria-label="Close">
-                  ✕
+                  <Icon name="close" />
                 </button>
               </div>
               {detail ? (
@@ -101,9 +102,11 @@ export function ProfileBrain({ data, details, username }: { data: BrainData; det
                 </div>
               ) : (
                 <div className="mt-4">
-                  <p className="font-mono text-xs uppercase tracking-wider text-cyan-100/60">◇ Synapse ready to fire.</p>
+                  <p className="font-mono text-xs uppercase tracking-wider text-cyan-100/60">
+                    <Icon name="node" size={12} /> Synapse ready to fire.
+                  </p>
                   <Link href={`/day/${selected.day}?c=${selected.category}`} className="btn btn-primary mt-3">
-                    Fire it →
+                    Fire it <Icon name="arrowRight" />
                   </Link>
                 </div>
               )}

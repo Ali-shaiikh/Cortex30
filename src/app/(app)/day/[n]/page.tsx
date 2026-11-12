@@ -7,6 +7,7 @@ import { requireUserData } from "@/lib/data";
 import { getExercise } from "@/lib/exercises";
 import { completionMap, key, lockReason, nodeState } from "@/lib/progress";
 import { CATEGORIES, CATEGORY_META, toPublic, type BonusExercise, type Category } from "@/lib/types";
+import { Icon } from "@/components/ui/Icon";
 
 export async function generateMetadata({ params }: PageProps<"/day/[n]">): Promise<Metadata> {
   const { n } = await params;
@@ -23,7 +24,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
   if (day > today) {
     return (
       <div className="glass mx-auto mt-10 max-w-md p-8 text-center">
-        <div className="display text-3xl text-magenta">⛒</div>
+        <Icon name="lock" size={36} className="mx-auto text-magenta drop-shadow-[0_0_10px_#ff3dbb]" />
         <h1 className="display neon mt-2 text-lg font-bold">Session {String(day).padStart(2, "0")} locked</h1>
         <p className="mt-1 font-mono text-xs uppercase tracking-wider text-cyan-100/55">Unlocks at 00:00 IST in {day - today} day{day - today > 1 ? "s" : ""}</p>
         <Link href="/" className="btn btn-ghost mt-5">
@@ -49,7 +50,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <Link href={day > 1 ? `/day/${day - 1}` : "/"} className="btn btn-ghost px-3 py-1.5" aria-label="Previous day">
-          ←
+          <Icon name="arrowLeft" />
         </Link>
         <h1 className="display neon text-base font-bold">
           Session {String(day).padStart(2, "0")}
@@ -58,7 +59,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
         {day < today && <span className="hidden font-mono text-[10px] uppercase tracking-wider text-cyan-100/45 sm:inline">Late reps count for progress, not streaks</span>}
         {day < today && (
           <Link href={`/day/${day + 1}`} className="btn btn-ghost ml-auto px-3 py-1.5" aria-label="Next day">
-            →
+            <Icon name="arrowRight" />
           </Link>
         )}
       </div>
@@ -82,7 +83,19 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
                 {meta.label}
               </div>
               <div className="font-mono text-[10px] uppercase tracking-wider text-cyan-100/50">
-                {sub ? `▣ fired ${sub.score}/10` : states[cat] === "available" ? "◇ ready" : "⛒ locked"}
+                {sub ? (
+                  <>
+                    <Icon name="synapse" size={11} /> fired {sub.score}/10
+                  </>
+                ) : states[cat] === "available" ? (
+                  <>
+                    <Icon name="node" size={11} /> ready
+                  </>
+                ) : (
+                  <>
+                    <Icon name="lock" size={11} /> locked
+                  </>
+                )}
               </div>
             </Link>
           );

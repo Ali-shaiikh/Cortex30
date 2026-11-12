@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { StoredFeedback } from "@/lib/types";
 import { VerdictBadge } from "../ui/VerdictBadge";
+import { Icon } from "../ui/Icon";
 
 const SECTIONS: { key: keyof StoredFeedback; title: string; sub: string; accent: string }[] = [
   { key: "what_you_got_right", title: "Signal confirmed", sub: "what you got right", accent: "#2ec4a0" },
@@ -19,7 +20,8 @@ export function FeedbackView({ feedback, hintsUsed }: { feedback: StoredFeedback
         <VerdictBadge verdict={feedback.verdict} score={feedback.score} />
         {feedback.thinking_pattern && feedback.thinking_pattern !== "none" && (
           <span className="border border-magenta/30 bg-magenta/10 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-pink-100">
-            ⌬ pattern: {feedback.thinking_pattern}
+            <Icon name="pattern" size={12} className="mr-1" />
+            pattern: {feedback.thinking_pattern}
           </span>
         )}
         {hintsUsed > 0 && feedback.raw_score !== undefined && (
