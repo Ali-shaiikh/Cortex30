@@ -86,3 +86,19 @@ describe("achievements", () => {
     expect(achievements(subs, START).comebackSkill).toBe("creative");
   });
 });
+
+describe("calibration period", () => {
+  it("does not award a level (or Polymath) from a single answer per skill", () => {
+    const subs = fullDay(1, 10);
+    expect(mastery(subs, "logic").level).toBe("Calibrating");
+    const ach = achievements(subs, START);
+    expect(ach.achievements.find((a) => a.id === "polymath")?.unlocked).toBe(false);
+    expect(ach.bridges.some((b) => b.reason === "Both skills Sharp")).toBe(false);
+  });
+
+  it("rates a skill once it has 3 answers", () => {
+    const subs = [1, 2, 3].flatMap((d) => fullDay(d, 9));
+    expect(mastery(subs, "logic").level).toBe("Master");
+    expect(achievements(subs, START).achievements.find((a) => a.id === "polymath")?.unlocked).toBe(true);
+  });
+});

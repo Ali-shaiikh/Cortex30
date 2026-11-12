@@ -158,7 +158,7 @@ LEARNER'S DRAFT REASONING: ${clip(input.draftReasoning, 1500) || "(empty)"}
 HINTS ALREADY GIVEN: ${input.previousHints.length ? input.previousHints.map((h, i) => `${i + 1}. ${h}`).join(" ") : "none"}
 
 Write the next guiding question only. If hints were already given, go one step further than them.`,
-    maxTokens: 1024,
+    maxTokens: 4096,
   });
   return text.trim().replace(/^["']|["']$/g, "");
 }
@@ -177,7 +177,7 @@ export async function answerFollowUp(input: {
     await getProvider().complete({
       system: `${COACH}\nAnswer the learner's single follow-up question about your feedback in at most 180 words. Be concrete and use their answer as the example.`,
       prompt: `EXERCISE:\n${input.exercise.prompt}\n\nREFERENCE SOLUTION:\n${input.exercise.reference_solution}\n\nLEARNER ANSWER:\n${clip(input.submission.answer, 2000)}\n\nLEARNER REASONING:\n${clip(input.submission.reasoning, 2000)}\n\nYOUR FEEDBACK: verdict ${fb.verdict}, score ${fb.score}. Went wrong: ${fb.where_your_thinking_went_wrong} How to think: ${fb.how_to_think_about_it}\n\nFOLLOW-UP QUESTION:\n${clip(input.question, 800)}`,
-      maxTokens: 2048,
+      maxTokens: 6144,
     })
   ).trim();
 }
@@ -235,7 +235,7 @@ export async function writeReport(input: { kind: "weekly" | "final"; week?: numb
     input.kind === "weekly"
       ? `Write the WEEK ${input.week} coach report (days ${(input.week! - 1) * 7 + 1}-${input.week! * 7}). Sections in Markdown: "## Patterns" (recurring thinking habits, good and bad, with evidence), "## Wins" (specific), "## Focus for next week" (2-3 concrete practices). Max 300 words.`
       : `Write the FINAL 30-day review. Sections in Markdown: "## Where you started", "## How your thinking changed" (cite specific days and scores, especially the day 30 revisits vs day 1), "## Your strongest and weakest skill", "## Patterns you fixed / still carry", "## Your next 30 days". Max 450 words.`;
-  return (await getProvider().complete({ system: COACH, prompt: `${task}\n\n${statsBlock(input.stats)}`, maxTokens: 4096 })).trim();
+  return (await getProvider().complete({ system: COACH, prompt: `${task}\n\n${statsBlock(input.stats)}`, maxTokens: 8192 })).trim();
 }
 
 export async function writeSummary(stats: ReportStats): Promise<string> {
@@ -243,7 +243,7 @@ export async function writeSummary(stats: ReportStats): Promise<string> {
     await getProvider().complete({
       system: COACH,
       prompt: `Write a "where you stand" summary for the top of the learner's progress page: 3-4 sentences, plain text, no headings. Name the strongest skill, the weakest skill, the most important habit to fix (from the thinking patterns), and one specific thing to do tomorrow.\n\n${statsBlock(stats)}`,
-      maxTokens: 1024,
+      maxTokens: 4096,
     })
   ).trim();
 }

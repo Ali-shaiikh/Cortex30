@@ -79,7 +79,9 @@ export const LEVELS = [
   { name: "Sharp", min: 6, max: 8 },
   { name: "Master", min: 8, max: 10 },
 ] as const;
-export type LevelName = (typeof LEVELS)[number]["name"];
+// Levels need a few data points: until then a skill is still "Calibrating".
+export const MIN_ANSWERS_FOR_LEVEL = 3;
+export type LevelName = (typeof LEVELS)[number]["name"] | "Calibrating";
 
 const byTime = <T extends SubLike>(a: T, b: T) => a.created_at.localeCompare(b.created_at);
 
@@ -103,16 +105,25 @@ export function mastery(subs: SubLike[], category: Category): Mastery {
   const avg = last5.length ? mean(last5.map((s) => Number(s.score))) : null;
   const level = levelFor(avg ?? 0);
   const idx = LEVELS.indexOf(level);
-  return {
+  const common = {
     avg,
-    level: level.name,
-    toNext: avg === null ? 0 : Math.min(1, (avg - level.min) / (level.max - level.min)),
-    nextLevel: idx < LEVELS.length - 1 ? LEVELS[idx + 1].name : null,
     completed: mine.length,
     completionPct: (mine.length / PROGRAM_DAYS) * 100,
     averageScore: mine.length ? mean(mine.map((s) => Number(s.score))) : null,
   };
+  if (mine.length < MIN_ANSWERS_FOR_LEVEL) {
+    return { ...common, level: "Calibrating", toNext: mine.length / MIN_ANSWERS_FOR_LEVEL, nextLevel: null };
+  }
+  return {
+    ...common,
+    level: level.name,
+    toNext: avg === null ? 0 : Math.min(1, (avg - level.min) / (level.max - level.min)),
+    nextLevel: idx < LEVELS.length - 1 ? LEVELS[idx + 1].name : null,
+  };
 }
+
+/** True once a skill has enough answers for its level to mean something. */
+export const isRated = (m: Mastery) => m.completed >= MIN_ANSWERS_FOR_LEVEL;
 
 export function allMastery(subs: SubLike[]): Record<Category, Mastery> {
   return Object.fromEntries(CATEGORIES.map((c) => [c, mastery(subs, c)])) as Record<Category, Mastery>;
@@ -237,7 +248,7 @@ export function achievements(subs: SubLike[], startDate: string): AchievementRes
   const biasHunts = main.filter((s) => s.category === "critical" && Number(s.score) >= 7).length;
   const strongIdeas = main.filter((s) => s.category === "creative" && s.verdict === "strong").length;
   const cal = calibration(main);
-  const sharpSkills = CATEGORIES.filter((c) => m[c].avg !== null && m[c].avg! >= 6);
+  const sharpSkills = CATEGORIES.filter((c) => isRated(m[c]) && m[c].avg! >= 6);
 
   // Comeback: a skill whose rolling average climbed 2+ points from a weak low (< 6).
   let comebackSkill: Category | null = null;

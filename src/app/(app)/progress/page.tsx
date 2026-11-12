@@ -57,7 +57,7 @@ export default async function ProgressPage() {
                     {s.level}
                     <span className="ml-2 font-mono text-cyan-100/45">last-5 {s.avg?.toFixed(1) ?? "-"}</span>
                   </span>
-                  <span className="text-cyan-100/45">{s.nextLevel ? <>next: {s.nextLevel}</> : "Top level"}</span>
+                  <span className="text-cyan-100/45">{s.level === "Calibrating" ? <>{s.completed}/3 answers to rate</> : s.nextLevel ? <>next: {s.nextLevel}</> : "Top level"}</span>
                 </div>
                 <ProgressBar value={s.toNext * 100} color="rgba(255,255,255,0.55)" className="h-1" />
               </div>

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useActionState, useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { startDive, stopDive } from "@/components/brain/store";
@@ -13,10 +14,10 @@ const subscribeNoop = () => () => {};
 type Props = {
   mode: "login" | "signup";
   action: (prev: AuthState, formData: FormData) => Promise<AuthState>;
-  next?: string;
 };
 
-export function AuthForm({ mode, action, next }: Props) {
+export function AuthForm({ mode, action }: Props) {
+  const next = useSearchParams().get("next") ?? undefined;
   const [state, formAction, pending] = useActionState(action, {});
   const [diving, setDiving] = useState(false);
   // Portals need document.body, which only exists after hydration.

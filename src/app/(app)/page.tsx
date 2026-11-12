@@ -39,7 +39,7 @@ export default async function CortexPage({ searchParams }: PageProps<"/">) {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="glass w-full p-4 sm:w-72">
             <p className="label">{"// neural profile"}</p>
-            <p className="display neon mt-1 truncate text-lg font-bold">@{profile.username}</p>
+            <p className="display neon mt-1 truncate text-lg font-bold normal-case">@{profile.username}</p>
             <div className="mt-3 grid grid-cols-2 gap-3 font-mono">
               <div>
                 <div className="label">Session</div>

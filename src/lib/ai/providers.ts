@@ -16,7 +16,8 @@ export class AIError extends Error {
 const GEMINI_ATTEMPT_TIMEOUT_MS = 35_000;
 const RETRYABLE = new Set([404, 429, 500, 503, 504]);
 
-async function geminiOnce(model: string, key: string, { system, prompt, json, maxTokens = 4096 }: CompleteArgs): Promise<string> {
+// Gemini counts its internal "thinking" against maxOutputTokens, so budgets must leave room for it.
+async function geminiOnce(model: string, key: string, { system, prompt, json, maxTokens = 8192 }: CompleteArgs): Promise<string> {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
@@ -36,6 +37,8 @@ async function geminiOnce(model: string, key: string, { system, prompt, json, ma
     throw new AIError(res.status === 429 ? "The free Gemini quota is busy. Try again in a minute." : `Gemini error ${res.status}: ${body}`, res.status);
   }
   const data = await res.json();
+  // A reply cut off by the token limit reads as broken; treat it as retryable so the fallback model gets a go.
+  if (data?.candidates?.[0]?.finishReason === "MAX_TOKENS") throw new AIError("Gemini reply was truncated", 503);
   const text: string = (data?.candidates?.[0]?.content?.parts ?? [])
     .filter((p: { text?: string; thought?: boolean }) => p.text && !p.thought)
     .map((p: { text: string }) => p.text)

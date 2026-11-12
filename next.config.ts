@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Hide the floating Next.js dev badge; it clashes with the HUD.
   devIndicators: false,
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icons/png/192" }];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
