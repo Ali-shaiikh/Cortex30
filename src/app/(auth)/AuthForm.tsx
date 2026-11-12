@@ -15,7 +15,7 @@ export function AuthForm({ mode, action, next }: Props) {
   const isSignup = mode === "signup";
 
   return (
-    <form action={formAction} className="glass-strong w-full max-w-sm space-y-5 p-7">
+    <form action={formAction} className="glass-strong w-full max-w-sm space-y-5 p-7 shadow-[0_0_80px_-20px_rgba(111,231,255,0.35)]">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{isSignup ? "Start your 30 days" : "Welcome back"}</h1>
         <p className="mt-1 text-sm text-white/55">

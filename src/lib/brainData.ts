@@ -64,3 +64,32 @@ export function buildBrainData(subs: Submission[], reports: Report[], today: num
     today,
   };
 }
+
+/** A showcase brain for the login/signup pages: part of each skill tree already lit. */
+export function demoBrainData(): BrainData {
+  const progress: Record<Category, number> = { logic: 11, analytical: 8, critical: 13, creative: 9 };
+  const nodes: BrainNode[] = EXERCISES.map((e) => {
+    const lit = e.day <= progress[e.category];
+    const score = lit ? 4 + ((e.day * 7 + e.category.length * 3) % 7) : null;
+    return {
+      category: e.category,
+      day: e.day,
+      state: lit ? "completed" : e.day === progress[e.category] + 1 ? "available" : "locked",
+      score,
+      verdict: lit ? "correct" : null,
+      title: e.title,
+      concept: e.concept,
+    };
+  });
+  return {
+    nodes,
+    bridges: [
+      { from: { category: "logic", day: 4 }, to: { category: "critical", day: 4 }, reason: "demo" },
+      { from: { category: "analytical" }, to: { category: "creative" }, reason: "demo" },
+    ],
+    mastery: { logic: 0.7, analytical: 0.55, critical: 0.8, creative: 0.6 },
+    flags: { firstSpark: true, halo: true, sparkCritical: false, sparkCreative: true, finisher: false },
+    satellites: [{ category: "creative", day: 5, completed: true, score: 8 }],
+    today: 14,
+  };
+}
