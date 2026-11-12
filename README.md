@@ -1,148 +1,275 @@
-# Cortex30
+<div align="center">
 
-A 30-day, AI-coached thinking program. Every day unlocks four exercises, one each for **Logic**, **Analytical**, **Critical** and **Creative** thinking. You set your confidence, write your answer and your reasoning, and an AI coach tells you whether you're right, where your thinking went wrong, and how an expert would have approached it. As you progress, a glowing mind map grows across a 3D brain.
+<img src="docs/screenshots/hero.png" alt="Cortex30: a glowing 3D brain wrapped in a neural network, next to the CORTEX/30 title" width="100%" />
+
+# CORTEX/30
+
+**Rewire how you think in 30 days.**
+An AI coach dissects every thought. Every rep fires a new neuron in a living 3D brain.
+
+<br />
+
+![Next.js](https://img.shields.io/badge/Next.js-16-6fe7ff?style=for-the-badge&logo=nextdotjs&logoColor=white&labelColor=05070d)
+![React](https://img.shields.io/badge/React-19-6fe7ff?style=for-the-badge&logo=react&logoColor=white&labelColor=05070d)
+![three.js](https://img.shields.io/badge/three.js-WebGL-c77dff?style=for-the-badge&logo=threedotjs&logoColor=white&labelColor=05070d)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-2ec4a0?style=for-the-badge&logo=supabase&logoColor=white&labelColor=05070d)
+![Gemini](https://img.shields.io/badge/AI%20coach-Gemini-ff8a4c?style=for-the-badge&logo=googlegemini&logoColor=white&labelColor=05070d)
+![PWA](https://img.shields.io/badge/PWA-installable-ff3dbb?style=for-the-badge&labelColor=05070d)
+![Cost](https://img.shields.io/badge/cost-%240%20%C2%B7%20free%20tiers-6fe7ff?style=for-the-badge&labelColor=05070d)
+
+`30 DAYS` · `4 CORTICES` · `120 SYNAPSES` · `1 AI COACH`
+
+</div>
+
+---
+
+## `// 00` What is Cortex30?
+
+Cortex30 is a **30-day training program for your thinking**. Every day unlocks four short exercises, one for each "cortex":
+
+| Cortex | Trains | Example exercises |
+| --- | --- | --- |
+| **Logic** | Valid reasoning | syllogisms, knights & knaves, Wason selection, probability traps |
+| **Analytical** | Structured problem-solving | Fermi estimates, driver trees, bottlenecks, value of information |
+| **Critical** | Spotting flawed arguments | fallacies, biases, misleading stats, pre-mortems, decision journals |
+| **Creative** | Original ideas | SCAMPER, forced connections, reverse brainstorming, constraints |
+
+You don't just answer. You state your **confidence**, explain your **reasoning**, and an **AI coach** grades how you thought, not only what you answered: what you got right, the exact step where your logic slipped, how an expert would model the problem, and a 2-minute drill to fix it.
+
+Your progress grows a **glowing mind map across a procedurally generated 3D brain**. Weak skills look visibly dimmer, and achievements fire bridges of light across the hemispheres.
+
+<div align="center">
+<img src="docs/screenshots/neural-map.png" alt="The interactive neural map: a 3D brain with glowing skill paths, region labels and a halo ring" width="100%" />
+<sub>The neural map: every exercise is a node on your brain. Drag to rotate, scroll to zoom, click a node to decode your answer and the coach's feedback.</sub>
+</div>
+
+---
+
+## `// 01` The session loop
+
+```mermaid
+flowchart LR
+    A([Jack in]) --> B[Boot sequence<br/>your brain loads]
+    B --> C{Today's 4 reps}
+    C --> D[Set confidence]
+    D --> E[Answer + reasoning]
+    E -. optional .-> H[Socratic hint<br/>-1 pt]
+    H -.-> E
+    E --> F[Commit: answer locks]
+    F --> G[AI coach feedback<br/>+ 1 follow-up question]
+    G --> N[Node ignites on the brain]
+    N --> C
+    C -->|all 4 done| S[Sharpening protocol<br/>drills + weak-spot bonus]
+```
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Login panel sliding in over the 3D brain" /></td>
+    <td width="50%"><img src="docs/screenshots/boot.png" alt="Neural boot sequence with data rain, live calculations and a typed log" /></td>
+  </tr>
+  <tr>
+    <td><sub><b>Jack in.</b> The hero brain dives toward you in a big-bang flash as you log in.</sub></td>
+    <td><sub><b>Neural boot.</b> Data rain, live calculations and a typed log load your brain before it bursts into view.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/focus-mode.png" alt="Calm focus-mode question panel with confidence slider and answer fields" /></td>
+    <td width="50%"><img src="docs/screenshots/sharpening.png" alt="Sharpening protocol with today's lessons, a focus tip and drills" /></td>
+  </tr>
+  <tr>
+    <td><sub><b>Focus mode.</b> The neon steps back while you read and answer: a calm, high-contrast panel.</sub></td>
+    <td><sub><b>Sharpening protocol.</b> After the daily four: lesson recall, a mental-math sprint, a guided drill and an AI weak-spot drill.</sub></td>
+  </tr>
+</table>
+
+---
+
+## `// 02` Features
+
+**The coach**
+- Grades **reasoning, not just answers**: a right answer with broken logic scores as *partially correct*.
+- Tags your **thinking pattern** on each answer (anchoring, confirmation bias, ignored base rates…), remembers your top three, and calls them out when they reappear.
+- Socratic **hints** that only ever ask a guiding question, plus **one follow-up question** per exercise.
+- **Weekly coach reports**, a daily "where you stand" summary, and a **final 30-day review** that compares your day-30 answers with day 1.
+
+**The brain**
+- Built procedurally in three.js: ~9,000 particles shaped into **real anatomy** (touching hemispheres, temporal lobes, lateral fissure, winding gyri, cerebellum, brainstem). No model files.
+- 4 regions × 30 nodes growing outward like skill trees; brightness tracks score, wrong answers glow amber.
+- Achievements unlock visuals: **Perfect Day** bridges, a **7-day streak** halo, sparks over the Critical and Creative regions (*Bias Hunter*, *Idea Machine*), a full-brain light-up at day 30.
+- A **draggable neural network** flows behind every page: grab a neuron and it springs back.
+
+**Diagnostics**
+- Mastery levels (Beginner → Developing → Sharp → Master), skill radar, score trend.
+- **Calibration matrix**: are you overconfident or underconfident, per skill?
+- **Cognitive fingerprint**: your recurring thinking patterns, and which ones you've fixed.
+- One-click **Markdown export** of every answer and all feedback.
+
+**The platform**
+- Username + password only. **No email, no tracking.**
+- Days unlock at local midnight (Asia/Kolkata); missed days stay open but don't count towards streaks.
+- **Mobile-first**: bottom tab bar, safe-area aware, installable as a PWA.
+- Respects *reduce motion*, falls back to a static SVG brain without WebGL, and drops to 3k particles with no bloom on low-end devices.
+
+<div align="center">
+<img src="docs/screenshots/mobile.png" alt="Cortex30 on a phone: brain in the top half, title and call to action below" width="300" />
+</div>
+
+---
+
+## `// 03` Architecture
+
+```mermaid
+flowchart TB
+    subgraph Browser
+      UI[Next.js App Router UI<br/>React 19 · Tailwind]
+      GL[three.js brain<br/>react-three-fiber · bloom]
+    end
+    subgraph Vercel [Vercel · server]
+      PX[proxy.ts<br/>session refresh + route guard]
+      API[API routes<br/>grade · hint · followup · bonus · report · summary · export]
+      AI[ai.ts<br/>zod-validated JSON, retry, model fallback]
+    end
+    subgraph Supabase
+      AUTH[Auth]
+      DB[(Postgres<br/>profiles · submissions · reports<br/>Row Level Security)]
+    end
+    GEM[[Google Gemini<br/>free tier]]
+
+    UI --> PX --> API
+    API --> AI --> GEM
+    API --> DB
+    UI --> AUTH
+```
+
+- **All AI calls run on the server.** Keys never reach the browser.
+- **Row Level Security** on every table: users can only read and insert their own rows. Answers can never be edited.
+- **Daily AI allowance** (15 calls per user, enforced atomically in Postgres) keeps you inside Gemini's free quota. Failed AI calls aren't counted.
+- Gemini runs on `gemini-3.5-flash`, falls back to `gemini-3.5-flash-lite` when busy, with a 35 s cap per attempt.
+
+| Layer | Tech |
+| --- | --- |
+| Framework | Next.js 16 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS 4, framer-motion, Orbitron / Rajdhani / Inter / JetBrains Mono |
+| 3D | three.js, @react-three/fiber, @react-three/drei, @react-three/postprocessing |
+| Data & auth | Supabase (Postgres + Auth, RLS) |
+| AI | Google Gemini (default) or Anthropic Claude (optional), behind one module |
+| Charts & validation | Recharts, zod |
+| Tests | Vitest |
+
+---
+
+## `// 04` Run it yourself (about 20 minutes, $0)
 
 Everything runs on free tiers. You don't need a credit card.
 
 | Piece | Free service |
 | --- | --- |
-| Website hosting | Vercel Hobby |
+| Hosting | Vercel Hobby |
 | Login + database | Supabase free tier |
-| AI coach | Google Gemini free tier (default) |
+| AI coach | Google Gemini free tier |
 
----
+You need [Node.js](https://nodejs.org) 20.9+ (22 recommended).
 
-## Set it up (about 20 minutes)
+### 1. Create a Supabase project
+1. Go to [supabase.com](https://supabase.com) and click **New project**.
+2. Pick any name, set a database password, choose the region closest to you, and keep the **Free** plan.
 
-You need [Node.js](https://nodejs.org) 20.9 or newer (22 recommended) and a free [GitHub](https://github.com) account.
-
-### 1. Create the Supabase project
-
-1. Go to [supabase.com](https://supabase.com), sign up, and click **New project**.
-2. Pick any name, set a database password (save it somewhere), choose the region closest to you (e.g. *Mumbai*), and keep the **Free** plan.
-3. Wait a minute or two while the project is created.
-
-### 2. Create the database tables
-
-1. In your Supabase project, open **SQL Editor** in the left sidebar, then click **New query**.
-2. Open [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) from this repo, copy **everything**, paste it into the editor and click **Run**.
-3. You should see "Success. No rows returned". This creates the three tables (`profiles`, `submissions`, `reports`), turns on Row Level Security so each user can only see their own rows, and adds the small database functions the app uses.
+### 2. Create the database
+1. In Supabase, open **SQL Editor**, then **New query**.
+2. Paste the whole of [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) and click **Run**. You should see *"Success. No rows returned"*.
 
 ### 3. Turn off email confirmation
+Cortex30 logs in with a **username and password**. Behind the scenes each username becomes a fake, never-mailed address, so Supabase must not try to confirm it.
 
-Cortex30 logs in with a **username and password**. There's no email. Behind the scenes each username becomes a fake address like `alex@users.mindgym.local`, which can never receive mail, so Supabase must not try to confirm it.
+**Authentication → Sign In / Providers → Email**: keep **Enable Email provider** on, turn **Confirm email** off, then **Save**.
 
-1. Open **Authentication**, then **Sign In / Providers** (on older dashboards: **Providers**), then **Email**.
-2. Make sure **Enable Email provider** is **on** and **Confirm email** is **off**.
-3. Click **Save**.
+### 4. Get a free Gemini key
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey), then **Create API key**.
 
-### 4. Get a free Gemini API key
+### 5. Configure
+```bash
+cp .env.example .env.local
+```
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-or-publishable-key   # NOT the service_role key
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your-gemini-key
+```
+Both keys are under Supabase **Project Settings → API**.
 
-1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and sign in with a Google account.
-2. Click **Create API key** and copy it.
-
-### 5. Set the environment variables
-
-1. In Supabase, open **Project Settings**, then **API** (or **API Keys**). Copy the **Project URL** and the **anon / publishable** key.
-2. In this project folder, copy the example file:
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-3. Open `.env.local` and fill it in:
-
-   ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://abcd1234.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...   # the anon/publishable key, NOT the service_role key
-   AI_PROVIDER=gemini
-   GEMINI_API_KEY=AIza...
-   ```
-
-`.env.local` is ignored by git, so your keys never get committed. The AI keys are only ever used on the server.
-
-### 6. Run it on your computer
-
+### 6. Launch
 ```bash
 npm install
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) and click **Create an account**. Today is your Day 1.
+Open [localhost:3000](http://localhost:3000), click **Begin your journey**, then **Initialise one**. Today is your Day 1.
 
 > No Gemini key yet? Set `AI_PROVIDER=mock` to click through the whole app with placeholder feedback.
 
-### Keeping your keys safe
-
-- Your real keys live only in `.env.local` on your computer and in Vercel's **Environment Variables**. `.env.local` is listed in `.gitignore`, so it is never committed. Only `.env.example` (placeholders) is in the repo.
-- Before every push, `git status` must **not** list `.env.local`.
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is designed to be public (it ships to the browser); your data is protected by the Row Level Security rules in the SQL file. **Never** put the Supabase `service_role` / secret key anywhere in this project.
-- `GEMINI_API_KEY` (and `ANTHROPIC_API_KEY`) are only read on the server, in API routes, and never reach the browser.
-- If a key ever leaks, revoke it and create a new one (Google AI Studio → API keys; Supabase → Project Settings → API Keys), then update `.env.local` and Vercel.
-
-### 7. Deploy to Vercel (free)
-
-1. Push this folder to a new GitHub repository.
-2. Go to [vercel.com](https://vercel.com), sign up with GitHub, click **Add New…**, then **Project**, and import the repository. Vercel detects Next.js automatically.
-3. Before clicking **Deploy**, open **Environment Variables** and add the same variables as in your `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `AI_PROVIDER`, `GEMINI_API_KEY`). Vercel keeps them encrypted; they never go into GitHub.
-4. Click **Deploy**. In a minute you'll get a URL like `cortex30-yourname.vercel.app`.
-5. On your phone, open that URL and choose **Add to Home Screen** to install it as an app.
+### 7. Deploy to Vercel
+1. Import this repository at [vercel.com/new](https://vercel.com/new).
+2. Add the same four environment variables under **Environment Variables**.
+3. Click **Deploy**, then open the URL on your phone and choose **Add to Home Screen**.
 
 ---
 
-## How it works
+## `// 05` Security & keys
 
-**Daily loop.** Your current day is "days since you signed up + 1", using India time (Asia/Kolkata). It unlocks at local midnight and caps at 30. The app re-checks every minute. Future days are locked. Past days stay open, but late answers don't count towards your streak. Inside each skill, an exercise only unlocks once its day has arrived **and** you've finished the previous day's exercise in that skill.
-
-**Each exercise:** read the prompt, set your confidence, write your answer and your reasoning. You can ask for an optional Socratic hint (a guiding question, never the answer; each one costs 1 point). Then you submit, and your answer locks permanently. The coach's feedback appears, you can ask it one follow-up question, and the matching node on the brain ignites.
-
-**The brain.** It's built procedurally from about 9,000 glowing particles on two folded hemispheres, with no 3D model files. Each skill owns a region, and its 30 nodes grow outward along three branches from a core. A node's brightness tracks your score, and wrong answers glow amber. Each region's ambient glow shows that skill's mastery level. Achievements unlock visuals: Perfect Day and "Sharp" skills draw bridges across the hemispheres, a 7-day streak adds a halo ring, and finishing day 30 lights up the whole brain. On `/profile` you can drag, zoom, hover and click nodes.
-
-**AI limits.** Each user gets **15 AI calls per day** (grading, hints, follow-ups, bonus exercises, reports and the summary all count). The count is kept in Postgres and resets at midnight IST. This keeps you inside Gemini's free quota.
-
-| Page | What's there |
-| --- | --- |
-| `/` | Today's four exercises, streak, overall progress |
-| `/day/[n]` | Any unlocked day; Weak Spot bonus after finishing a day |
-| `/progress` | Mastery, radar, trend, calibration, thinking fingerprint, achievements, weekly reports, Markdown export |
-| `/profile` | The big interactive brain |
+- Real keys live **only** in `.env.local` (git-ignored) and in Vercel's encrypted **Environment Variables**. The repo contains just placeholders in `.env.example`.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is public by design. Your data is protected by the Row Level Security rules in the SQL file. **Never** use the Supabase `service_role` / secret key in this project.
+- `GEMINI_API_KEY` and `ANTHROPIC_API_KEY` are read only by server routes.
+- Security headers are sent on every response (HSTS, frame denial, nosniff, referrer and permissions policies), and personal pages are excluded from search engines.
+- If a key ever leaks, revoke it and create a new one, then update `.env.local` and Vercel.
 
 ---
 
-## Commands
+## `// 06` Commands
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Start the app locally |
-| `npm run build` / `npm start` | Production build / run it |
-| `npm test` | Unit tests: day/midnight rollover, unlock rules, streaks, mastery, achievements |
-| `npm run test:grading` | Sends 3 deliberately wrong answers to the real AI coach and checks they're graded wrong (needs `GEMINI_API_KEY`) |
+| `npm run dev` | Start locally |
+| `npm run build` · `npm start` | Production build · serve it |
+| `npm test` | Unit tests: midnight rollover, unlock rules, streaks, mastery, achievements |
+| `npm run test:grading` | Sends 3 deliberately wrong answers to the real coach and checks they're graded wrong |
 | `npm run build:exercises` | Rebuild `src/data/exercises.json` from `scripts/exercises/*.mjs` |
-| `npm run lint` / `npm run typecheck` | Code checks |
+| `npm run lint` · `npm run typecheck` | Code checks |
 
-## Using Claude instead of Gemini (optional, paid)
-
-Set `AI_PROVIDER=claude` and `ANTHROPIC_API_KEY=...`. The default model is `claude-opus-5-5`. Change it with `CLAUDE_MODEL` (e.g. `claude-haiku-5-5` costs far less). Server-side refusal fallback is turned on for Claude requests. Note: the Anthropic API is **not free**, so this option breaks the "everything free" rule.
-
-## Project layout
+<details>
+<summary><b>Project layout</b></summary>
 
 ```
 supabase/migrations/0001_init.sql   tables, RLS, functions (run once)
 scripts/exercises/*.mjs             the 120 exercises (source) → src/data/exercises.json
-src/proxy.ts                        protects every page except /login and /signup
+src/proxy.ts                        session refresh + route protection
 src/lib/day.ts                      Asia/Kolkata day + unlock logic
 src/lib/progress.ts                 streaks, mastery, calibration, fingerprint, achievements, bridges
 src/lib/ai.ts                       gradeAnswer, getHint, generateBonus, writeReport, writeSummary
-src/lib/ai/providers.ts             Gemini (REST), Claude (SDK), mock
-src/app/api/*                       server routes; all AI calls happen here
+src/lib/ai/providers.ts             Gemini (REST + fallback), Claude (SDK), mock
+src/app/api/*                       server routes; every AI call happens here
 src/components/brain/*              procedural 3D brain, mind map, SVG fallback
+src/components/NeuralField.tsx      the draggable neural-network background
 ```
+</details>
 
-## Troubleshooting
+<details>
+<summary><b>Using Claude instead of Gemini (optional, paid)</b></summary>
 
-- **"Account created, but Supabase wants email confirmation"**: step 3 wasn't saved. Turn off *Confirm email*, then log in.
-- **"Email address is invalid" on sign-up**: some Supabase projects reject the `.local` test domain. Change the domain in `src/lib/auth.ts` (`usernameToEmail`) to one you own, e.g. `users.yourname.dev`. Existing accounts would need to be recreated.
-- **"You've used all 15 coach calls for today"**: wait until midnight IST, or raise `AI_DAILY_LIMIT` (it must stay within your Gemini quota).
-- **"The free Gemini quota is busy"**: the free tier allows a limited number of requests per minute. Wait a moment and retry. The app automatically falls back from `GEMINI_MODEL` (default `gemini-3.5-flash`) to `GEMINI_FALLBACK_MODEL` (`gemini-3.5-flash-lite`).
-- **The brain doesn't appear**: your browser has WebGL turned off, so a static brain is shown instead. On phones and low-end laptops the brain automatically uses fewer particles and no bloom. With "reduce motion" switched on in your OS, it stops spinning.
-- **Redirected to `/setup`**: `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is missing. Restart `npm run dev` after editing `.env.local`.
+Set `AI_PROVIDER=claude` and `ANTHROPIC_API_KEY=...`. The default model is `claude-opus-5-5`; change it with `CLAUDE_MODEL` (e.g. `claude-haiku-5-5` costs far less). The Anthropic API is **not free**.
+</details>
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+
+- **"Supabase wants email confirmation"**: turn off *Confirm email* (step 3), then log in.
+- **"Email address is invalid" on sign-up**: some projects reject the `.local` domain. Change it in `src/lib/auth.ts` (`usernameToEmail`) *before* anyone signs up.
+- **"You've used all 15 coach calls for today"**: wait until midnight IST, or raise `AI_DAILY_LIMIT` (stay within your Gemini quota).
+- **"The free Gemini quota is busy"**: wait a moment and retry. The app already falls back to `GEMINI_FALLBACK_MODEL`.
+- **No 3D brain**: WebGL is off, so a static brain is shown instead.
+- **Redirected to `/setup`**: a Supabase variable is missing. Restart `npm run dev` after editing `.env.local`.
+</details>
+
+---
+
+<div align="center">
+<sub>CORTEX/30 · built by <a href="https://github.com/Ali-shaiikh">Ali Shaikh</a> · 30 days to a sharper mind</sub>
+</div>
