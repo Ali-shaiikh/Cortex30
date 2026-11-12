@@ -3,7 +3,6 @@ import { z } from "zod";
 import { answerFollowUp } from "@/lib/ai";
 import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
-import { getExercise } from "@/lib/exercises";
 import { withAiQuota } from "@/lib/ratelimit";
 
 const schema = z.object({
@@ -17,7 +16,7 @@ export const POST = handler(schema, async (body) => {
   const sub = ctx.submissions.find((s) => s.id === body.submissionId);
   if (!sub) return jsonError("Submission not found", 404);
   if (sub.feedback_json.followup) return jsonError("You've already used your follow-up for this exercise", 409);
-  const exercise = sub.is_bonus ? sub.feedback_json.bonus : getExercise(sub.category, sub.day);
+  const exercise = sub.is_bonus ? sub.feedback_json.bonus : ctx.plan.forSubmission(sub);
   if (!exercise) return jsonError("Exercise not found", 404);
 
   const answer = await withAiQuota(ctx.supabase, ctx.userId, () => answerFollowUp({ exercise, submission: sub, question: body.question }));

@@ -3,7 +3,6 @@ import { z } from "zod";
 import { getHint } from "@/lib/ai";
 import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
-import { getExercise } from "@/lib/exercises";
 import { completionMap, nodeState } from "@/lib/progress";
 import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type BonusExercise } from "@/lib/types";
@@ -28,8 +27,7 @@ export const POST = handler(schema, async (body) => {
     if (!report) return jsonError("Bonus not found", 404);
     exercise = JSON.parse(report.text) as BonusExercise;
   } else {
-    exercise = getExercise(body.category, body.day);
-    if (!exercise) return jsonError("Exercise not found", 404);
+    exercise = ctx.plan.get(body.category, body.day);
     if (nodeState(body.category, body.day, ctx.today, completionMap(ctx.submissions)) !== "available") {
       return jsonError("Hints are only available before you submit", 400);
     }

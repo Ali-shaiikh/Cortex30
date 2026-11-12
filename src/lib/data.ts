@@ -3,6 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import { currentDay, rawProgramDay } from "./day";
+import { buildPlan, type Plan } from "./plan";
 import type { Profile, Report, Submission } from "./types";
 
 export type UserData = {
@@ -11,6 +12,7 @@ export type UserData = {
   reports: Report[];
   today: number;
   rawDay: number;
+  plan: Plan;
 };
 
 /** Signed-in user's id from the verified JWT, or null. */
@@ -28,9 +30,11 @@ async function fetchUserData(supabase: Awaited<ReturnType<typeof createClient>>,
   ]);
   if (!profileRes.data) return null;
   const profile = profileRes.data as Profile;
+  const submissions = ((subsRes.data ?? []) as Submission[]).map((s) => ({ ...s, score: Number(s.score) }));
   return {
     profile,
-    submissions: ((subsRes.data ?? []) as Submission[]).map((s) => ({ ...s, score: Number(s.score) })),
+    submissions,
+    plan: buildPlan(profile.id, submissions),
     reports: (reportsRes.data ?? []) as Report[],
     today: currentDay(profile.start_date),
     rawDay: rawProgramDay(profile.start_date),

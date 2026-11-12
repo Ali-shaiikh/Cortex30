@@ -1,13 +1,12 @@
 import { loadForApi } from "@/lib/data";
 import { jsonError } from "@/lib/api";
-import { getExercise } from "@/lib/exercises";
 import { CATEGORY_META } from "@/lib/types";
 
 /** Downloads every answer + coach feedback as Markdown. */
 export async function GET() {
   const ctx = await loadForApi();
   if (!ctx) return jsonError("Not signed in", 401);
-  const { profile, submissions, reports } = ctx;
+  const { profile, submissions, reports, plan } = ctx;
 
   const lines: string[] = [`# Cortex30: @${profile.username}`, "", `Started ${profile.start_date} · ${submissions.filter((s) => !s.is_bonus).length}/120 exercises`, ""];
   const final = reports.find((r) => r.kind === "final");
@@ -23,7 +22,7 @@ export async function GET() {
       day = s.day;
       lines.push(`## Day ${day}`, "");
     }
-    const ex = s.is_bonus ? s.feedback_json.bonus : getExercise(s.category, s.day);
+    const ex = s.is_bonus ? s.feedback_json.bonus : plan.forSubmission(s);
     const fb = s.feedback_json;
     lines.push(
       `### ${CATEGORY_META[s.category].label}${s.is_bonus ? " (bonus)" : ""}: ${ex?.title ?? ""}`,

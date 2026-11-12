@@ -105,6 +105,7 @@ flowchart LR
 
 **The platform**
 - Username + password only. **No email, no tracking.**
+- **Every user gets their own question order**: exercises are shuffled per user within each week, so difficulty still ramps up. Day 29 still reviews your day-16 decision journal, and day 30 revisits *your* day 1.
 - Days unlock at local midnight (Asia/Kolkata); missed days stay open but don't count towards streaks.
 - **Mobile-first**: bottom tab bar, safe-area aware, installable as a PWA.
 - Respects *reduce motion*, falls back to a static SVG brain without WebGL, and drops to 3k particles with no bloom on low-end devices.

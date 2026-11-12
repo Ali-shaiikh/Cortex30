@@ -15,7 +15,7 @@ export const POST = handler(z.object({}), async () => {
   if (latest && localDate(new Date(latest.created_at)) === localDate()) return NextResponse.json({ report: latest, fresh: false });
   if (ctx.submissions.length < 2) return jsonError("Complete a couple of exercises first", 400);
 
-  const text = await withAiQuota(ctx.supabase, ctx.userId, () => writeSummary(buildReportStats(ctx.profile, ctx.submissions, ctx.today)));
+  const text = await withAiQuota(ctx.supabase, ctx.userId, () => writeSummary(buildReportStats(ctx.profile, ctx.submissions, ctx.plan, ctx.today)));
   const { data, error } = await ctx.supabase.from("reports").insert({ user_id: ctx.userId, kind: "summary", text }).select("*").single();
   if (error) return jsonError(error.message, 500);
   return NextResponse.json({ report: data, fresh: true });

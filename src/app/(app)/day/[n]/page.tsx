@@ -5,7 +5,6 @@ import { BonusSection } from "@/components/exercise/BonusSection";
 import { DaySession } from "@/components/exercise/DaySession";
 import { SharpeningProtocol } from "@/components/exercise/SharpeningProtocol";
 import { requireUserData } from "@/lib/data";
-import { getExercise } from "@/lib/exercises";
 import { completionMap, fingerprint, key, lockReason, nodeState } from "@/lib/progress";
 import { CATEGORIES, toPublic, type BonusExercise, type Category, type ExercisePublic, type Submission } from "@/lib/types";
 import { Icon } from "@/components/ui/Icon";
@@ -20,7 +19,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
   const { c } = await searchParams;
   const day = Number(n);
   if (!Number.isInteger(day) || day < 1 || day > 30) notFound();
-  const { submissions, reports, today } = await requireUserData();
+  const { submissions, reports, today, plan } = await requireUserData();
 
   if (day > today) {
     return (
@@ -40,6 +39,11 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
   const requested = CATEGORIES.find((cat) => cat === c);
   const active: Category = requested ?? CATEGORIES.find((cat) => states[cat] === "available") ?? "logic";
   const remaining = CATEGORIES.filter((cat) => !done.has(key(cat, day)));
+  // Answered exercises show what was actually answered; open ones come from the user's plan.
+  const exerciseOf = (cat: Category) => {
+    const sub = done.get(key(cat, day));
+    return (sub && plan.forSubmission(sub)) || plan.get(cat, day);
+  };
   const dayComplete = remaining.length === 0;
 
   const bonusReport = reports.find((r) => r.kind === "bonus" && r.week === day);
@@ -72,7 +76,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
             CATEGORIES.map((cat) => [
               cat,
               {
-                exercise: toPublic(getExercise(cat, day)!),
+                exercise: toPublic(exerciseOf(cat)),
                 submission: done.get(key(cat, day)) ?? null,
                 locked: lockReason(cat, day, today, done),
                 completesDay: remaining.length === 1 && remaining[0] === cat,
@@ -87,7 +91,7 @@ export default async function DayPage({ params, searchParams }: PageProps<"/day/
           day={day}
           lessons={CATEGORIES.map((cat) => {
             const sub = done.get(key(cat, day))!;
-            return { category: cat, title: getExercise(cat, day)!.title, lesson: sub.feedback_json.transferable_lesson, pattern: sub.thinking_pattern };
+            return { category: cat, title: exerciseOf(cat).title, lesson: sub.feedback_json.transferable_lesson, pattern: sub.thinking_pattern };
           })}
           topPattern={fingerprint(submissions).find((f) => !f.fixed)?.pattern ?? null}
           bonus={<BonusSection day={day} bonus={bonus ? toPublic({ ...bonus, day }) : null} submission={bonusSub} />}

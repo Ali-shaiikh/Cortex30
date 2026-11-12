@@ -28,7 +28,7 @@ export const POST = handler(schema, async ({ kind, week }) => {
     if (!CATEGORIES.every((c) => done.has(key(c, 30)))) return jsonError("Complete day 30 first", 400);
   }
 
-  const stats = buildReportStats(ctx.profile, ctx.submissions, ctx.today, kind === "weekly" ? (week! - 1) * 7 + 1 : 1, kind === "weekly" ? week! * 7 : 30);
+  const stats = buildReportStats(ctx.profile, ctx.submissions, ctx.plan, ctx.today, kind === "weekly" ? (week! - 1) * 7 + 1 : 1, kind === "weekly" ? week! * 7 : 30);
   const text = await withAiQuota(ctx.supabase, ctx.userId, () => writeReport({ kind, week, stats }));
   const { data, error } = await ctx.supabase
     .from("reports")

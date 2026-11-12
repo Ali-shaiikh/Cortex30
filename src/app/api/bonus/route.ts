@@ -3,7 +3,6 @@ import { z } from "zod";
 import { generateBonus } from "@/lib/ai";
 import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
-import { getExercise } from "@/lib/exercises";
 import { completionMap, fingerprint, key, mainSubmissions } from "@/lib/progress";
 import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type Category } from "@/lib/types";
@@ -34,7 +33,7 @@ export const POST = handler(schema, async ({ day }) => {
       pattern: top.pattern,
       category,
       day,
-      recentTitles: CATEGORIES.map((c) => getExercise(c, day)?.title ?? ""),
+      recentTitles: CATEGORIES.map((c) => ctx.plan.get(c, day).title),
     }),
   );
   const { error } = await ctx.supabase.from("reports").insert({ user_id: ctx.userId, kind: "bonus", week: day, text: JSON.stringify(bonus) });

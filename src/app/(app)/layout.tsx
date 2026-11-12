@@ -8,8 +8,8 @@ import { requireUserData } from "@/lib/data";
 export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const { profile, submissions, reports, today } = await requireUserData();
-  const brain = buildBrainData(submissions, reports, today, profile.start_date);
+  const { profile, submissions, reports, today, plan } = await requireUserData();
+  const brain = buildBrainData(submissions, reports, today, profile.start_date, plan);
   return (
     <div className="relative min-h-dvh">
       <BrainBackground data={brain} />

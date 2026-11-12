@@ -20,6 +20,8 @@ export type Exercise = {
   concept: string;
   /** Exercise id whose earlier submission the coach should compare against (days 29/30). */
   revisit_of?: string;
+  /** The program day of that earlier exercise for this user (plans shuffle exercises per user). */
+  revisit_day?: number;
 };
 
 export type Verdict = "correct" | "partially_correct" | "incorrect" | "strong" | "developing" | "weak";
@@ -37,6 +39,8 @@ export type Feedback = {
 
 /** What we store in submissions.feedback_json. */
 export type StoredFeedback = Feedback & {
+  /** Which exercise this answered (per-user plans shuffle exercises across days). */
+  exercise_id?: string;
   raw_score?: number;
   followup?: { question: string; answer: string; at: string };
   /** For bonus exercises the generated prompt is stored alongside the feedback. */

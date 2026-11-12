@@ -3,7 +3,6 @@ import { z } from "zod";
 import { gradeAnswer } from "@/lib/ai";
 import { handler, jsonError } from "@/lib/api";
 import { loadForApi } from "@/lib/data";
-import { getExercise, getExerciseById } from "@/lib/exercises";
 import { completionMap, nodeState, topPatterns } from "@/lib/progress";
 import { withAiQuota } from "@/lib/ratelimit";
 import { CATEGORIES, type BonusExercise, type StoredFeedback } from "@/lib/types";
@@ -21,10 +20,10 @@ const schema = z.object({
 export const POST = handler(schema, async (body) => {
   const ctx = await loadForApi();
   if (!ctx) return jsonError("Not signed in", 401);
-  const { supabase, submissions, reports, today, userId } = ctx;
+  const { supabase, submissions, reports, today, userId, plan } = ctx;
   const done = completionMap(submissions);
 
-  let exercise: { title: string; prompt: string; reference_solution: string; rubric: string; category: typeof body.category; concept: string; revisit_of?: string };
+  let exercise: { id?: string; title: string; prompt: string; reference_solution: string; rubric: string; category: typeof body.category; concept: string; revisit_day?: number };
   let bonus: BonusExercise | undefined;
 
   if (body.bonus) {
@@ -34,8 +33,7 @@ export const POST = handler(schema, async (body) => {
     bonus = JSON.parse(report.text) as BonusExercise;
     exercise = { ...bonus };
   } else {
-    const ex = getExercise(body.category, body.day);
-    if (!ex) return jsonError("Exercise not found", 404);
+    const ex = plan.get(body.category, body.day);
     const state = nodeState(body.category, body.day, today, done);
     if (state === "completed") return jsonError("You already answered this one. Answers are locked.", 409);
     if (state === "locked") return jsonError("This exercise is still locked", 403);
@@ -44,11 +42,10 @@ export const POST = handler(schema, async (body) => {
 
   // Revisit days: give the coach the earlier attempt to compare against.
   let previous = null;
-  if (!body.bonus && exercise.revisit_of) {
-    const orig = getExerciseById(exercise.revisit_of);
-    const prevSub = orig && done.get(`${orig.category}-${orig.day}`);
-    if (orig && prevSub) {
-      previous = { day: orig.day, answer: prevSub.answer, reasoning: prevSub.reasoning, score: Number(prevSub.score), feedback: prevSub.feedback_json.transferable_lesson };
+  if (!body.bonus && exercise.revisit_day) {
+    const prevSub = done.get(`${exercise.category}-${exercise.revisit_day}`);
+    if (prevSub) {
+      previous = { day: exercise.revisit_day, answer: prevSub.answer, reasoning: prevSub.reasoning, score: Number(prevSub.score), feedback: prevSub.feedback_json.transferable_lesson };
     }
   }
 
@@ -65,7 +62,7 @@ export const POST = handler(schema, async (body) => {
 
   // Each Socratic hint costs one point.
   const finalScore = Math.max(0, Math.round((feedback.score - body.hintsUsed) * 10) / 10);
-  const stored: StoredFeedback = { ...feedback, score: finalScore, raw_score: feedback.score, ...(bonus ? { bonus } : {}) };
+  const stored: StoredFeedback = { ...feedback, score: finalScore, raw_score: feedback.score, ...(bonus ? { bonus } : { exercise_id: exercise.id }) };
 
   const { data, error } = await supabase
     .from("submissions")

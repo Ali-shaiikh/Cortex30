@@ -2,6 +2,7 @@
 import { achievements, allMastery, completionMap, nodeState, type Bridge, type NodeState } from "./progress";
 import { CATEGORIES, type Category, type Report, type Submission, type Verdict } from "./types";
 import { EXERCISES } from "./exercises";
+import { planExercises, type Plan } from "./plan";
 
 export type BrainNode = {
   category: Category;
@@ -22,18 +23,19 @@ export type BrainData = {
   today: number;
 };
 
-export function buildBrainData(subs: Submission[], reports: Report[], today: number, startDate: string): BrainData {
+export function buildBrainData(subs: Submission[], reports: Report[], today: number, startDate: string, plan: Plan): BrainData {
   const done = completionMap(subs);
-  const nodes: BrainNode[] = EXERCISES.map((e) => {
+  const nodes: BrainNode[] = planExercises(plan).map((e) => {
     const s = done.get(`${e.category}-${e.day}`);
+    const shown = s ? plan.forSubmission(s) ?? e : e;
     return {
       category: e.category,
       day: e.day,
       state: nodeState(e.category, e.day, today, done),
       score: s ? Number(s.score) : null,
       verdict: s?.verdict ?? null,
-      title: e.title,
-      concept: e.concept,
+      title: shown.title,
+      concept: shown.concept,
     };
   });
   const m = allMastery(subs);
